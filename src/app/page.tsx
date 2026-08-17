@@ -1,4 +1,5 @@
 import { Activity, Database, Orbit, Sigma } from "lucide-react";
+import OrbitalScene from "@/components/OrbitalScene";
 
 export default function Home() {
   return (
@@ -28,15 +29,11 @@ export default function Home() {
             Science Math
           </a>
         </nav>
-
         <div className="flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-200">
           <Activity size={14} />
           TELEMETRY ACTIVE
         </div>
-      </header>
-
-      <section
-        id="lab"
+      </header>      <section        id="lab"
         className="mx-auto mt-6 grid max-w-7xl gap-5 lg:grid-cols-[1fr_340px]"
       >
         <div className="rounded-lg border border-[#2A2620] bg-[#11100E]/90 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
@@ -46,17 +43,22 @@ export default function Home() {
                 Orbital View
               </h2>
               <p className="text-sm text-stone-500">
-                3D star and planet simulation will render here.
+                Live 3D view of the star and orbiting exoplanet.
               </p>
             </div>
+
             <Orbit className="text-amber-300" size={22} />
           </div>
 
-          <div className="flex aspect-video items-center justify-center rounded-lg border border-[#2A2620] bg-[#050505]">
-            <div className="text-center">
-              <div className="mx-auto mb-4 size-24 rounded-full bg-[#D6A33A] shadow-[0_0_70px_rgba(214,163,58,0.45)]" />
-              <p className="font-mono text-sm text-stone-500">
-                WebGL canvas coming soon
+          <div className="relative h-[360px] overflow-hidden rounded-lg border border-[#2A2620] bg-[#050505] sm:h-[440px] lg:h-auto lg:aspect-video">
+            <OrbitalScene />
+
+            <div className="pointer-events-none absolute bottom-4 left-4 rounded-md border border-[#3A3024] bg-[#0B0907]/80 px-3 py-2 backdrop-blur-sm">
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">
+                Target system
+              </p>
+              <p className="mt-1 font-mono text-xs text-amber-200">
+                EXO-001
               </p>
             </div>
           </div>
@@ -68,8 +70,11 @@ export default function Home() {
               <h2 className="text-lg font-semibold text-stone-50">
                 Mission Controls
               </h2>
-              <p className="text-sm text-stone-500">Simulation parameters</p>
+              <p className="text-sm text-stone-500">
+                Simulation parameters
+              </p>
             </div>
+
             <Sigma className="text-rose-300" size={22} />
           </div>
 
@@ -93,12 +98,11 @@ export default function Home() {
               <p className="mt-1 font-mono text-2xl text-rose-300">0.01%</p>
             </div>
           </div>
-        </aside>
-      </section>
-
+        </aside>      </section>
       <section className="mx-auto mt-5 max-w-7xl rounded-lg border border-[#2A2620] bg-[#11100E]/90 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
         <div className="mb-4 flex items-center gap-3">
           <Database className="text-rose-300" size={20} />
+
           <h2 className="text-lg font-semibold text-stone-50">
             Live Light-Curve
           </h2>
@@ -109,7 +113,5 @@ export default function Home() {
             Streaming brightness will appear here.
           </p>
         </div>
-      </section>
-    </main>
-  );
+      </section>    </main>  );
 }
