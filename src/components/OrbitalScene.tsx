@@ -15,6 +15,19 @@ import {
 } from "three";
 import type { Group } from "three";
 
+type OrbitalSceneProps = {
+  planetRadius?: number;
+  starRadius?: number;
+};
+
+type StarProps = {
+  radius: number;
+};
+
+type PlanetProps = {
+  radius: number;
+};
+
 function createStarTexture() {
   const width = 256;
   const height = 128;
@@ -68,8 +81,12 @@ function createStarTexture() {
       const pixelIndex = (y * width + x) * 4;
 
       pixelData[pixelIndex] = Math.round(220 + brightness * 35);
-      pixelData[pixelIndex + 1] = Math.round(70 + brightness * 145);
-      pixelData[pixelIndex + 2] = Math.round(10 + brightness * 55);
+      pixelData[pixelIndex + 1] = Math.round(
+        70 + brightness * 145,
+      );
+      pixelData[pixelIndex + 2] = Math.round(
+        10 + brightness * 55,
+      );
       pixelData[pixelIndex + 3] = 255;
     }
   }
@@ -91,7 +108,7 @@ function createStarTexture() {
   return texture;
 }
 
-function Star() {
+function Star({ radius }: StarProps) {
   const starGroup = useRef<Group>(null);
 
   const starTexture = useMemo(() => {
@@ -114,12 +131,10 @@ function Star() {
 
   return (
     <group ref={starGroup}>
-      {/* Textured stellar surface */}
       <mesh>
-        <sphereGeometry args={[1.35, 96, 96]} />
+        <sphereGeometry args={[radius, 96, 96]} />
 
-        <meshStandardMaterial
-          map={starTexture}
+        <meshStandardMaterial          map={starTexture}
           emissiveMap={starTexture}
           color="#fff1d0"
           emissive="#d95518"
@@ -128,13 +143,10 @@ function Star() {
           metalness={0}
         />
       </mesh>
-
-      {/* Inner atmospheric glow */}
       <mesh scale={1.06}>
-        <sphereGeometry args={[1.35, 64, 64]} />
+        <sphereGeometry args={[radius, 64, 64]} />
 
-        <meshBasicMaterial
-          color="#f3a33a"
+        <meshBasicMaterial          color="#f3a33a"
           transparent
           opacity={0.14}
           side={BackSide}
@@ -142,13 +154,10 @@ function Star() {
           depthWrite={false}
         />
       </mesh>
-
-      {/* Larger, softer outer glow */}
       <mesh scale={1.13}>
-        <sphereGeometry args={[1.35, 64, 64]} />
+        <sphereGeometry args={[radius, 64, 64]} />
 
-        <meshBasicMaterial
-          color="#d66b2c"
+        <meshBasicMaterial          color="#d66b2c"
           transparent
           opacity={0.055}
           side={BackSide}
@@ -156,15 +165,12 @@ function Star() {
           depthWrite={false}
         />
       </mesh>
-
-      <pointLight
-        color="#f2a74f"
+      <pointLight        color="#f2a74f"
         intensity={34}
         distance={18}
         decay={2}
       />
-    </group>
-  );
+    </group>  );
 }
 
 function OrbitPath() {
@@ -190,7 +196,7 @@ function OrbitPath() {
   );
 }
 
-function Planet() {
+function Planet({ radius }: PlanetProps) {
   const planetGroup = useRef<Group>(null);
   const orbitProgress = useRef(0);
 
@@ -213,7 +219,7 @@ function Planet() {
   return (
     <group ref={planetGroup}>
       <mesh>
-        <sphereGeometry args={[0.38, 48, 48]} />
+        <sphereGeometry args={[radius, 48, 48]} />
 
         <meshStandardMaterial          color="#703d32"
           roughness={0.9}
@@ -221,7 +227,7 @@ function Planet() {
         />
       </mesh>
       <mesh scale={1.04}>
-        <sphereGeometry args={[0.38, 48, 48]} />
+        <sphereGeometry args={[radius, 48, 48]} />
 
         <meshBasicMaterial          color="#b46146"
           transparent
@@ -230,7 +236,13 @@ function Planet() {
       </mesh>    </group>  );
 }
 
-export default function OrbitalScene() {
+export default function OrbitalScene({
+  planetRadius = 1,
+  starRadius = 1,
+}: OrbitalSceneProps) {
+  const renderedPlanetRadius = 0.38 * planetRadius;
+  const renderedStarRadius = 1.35 * starRadius;
+
   return (
     <div className="h-full min-h-[360px] w-full">
       <Canvas        camera={{
@@ -259,7 +271,7 @@ export default function OrbitalScene() {
         />
 
         <OrbitPath />
-        <Star />
-        <Planet />
+        <Star radius={renderedStarRadius} /> 
+        <Planet radius={renderedPlanetRadius} />
       </Canvas>    </div>  );
 }
