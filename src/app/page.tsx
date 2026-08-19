@@ -2,9 +2,11 @@
 
 import { useCallback, useState } from "react";
 import {
-  Activity,
   Database,
   Orbit,
+  Pause,
+  Play,
+  RotateCcw,
   Sigma,
 } from "lucide-react";
 import { LightCurveChart } from "@/components/LightCurveChart";
@@ -14,6 +16,11 @@ export default function Home() {
   const [planetRadius, setPlanetRadius] = useState(1);
   const [starRadius, setStarRadius] = useState(1);
   const [orbitalPhase, setOrbitalPhase] = useState(0);
+
+  const [isPaused, setIsPaused] = useState(false);
+  const [simulationSpeed, setSimulationSpeed] =
+    useState(1);
+  const [resetSignal, setResetSignal] = useState(0);
 
   const solarRadiusInEarthRadii = 109.1;
 
@@ -31,42 +38,62 @@ export default function Home() {
     [],
   );
 
+  function handleReset() {
+    setResetSignal((current) => current + 1);
+    setOrbitalPhase(0);
+  }
+
   return (
-    <main className="min-h-screen bg-[#070707] px-6 py-5 text-stone-100">
-      <header className="mx-auto flex max-w-7xl items-center justify-between rounded-lg border border-[#2A2620] bg-[#11100E]/90 px-5 py-4 shadow-[0_18px_60px_rgba(0,0,0,0.35)]">
+    <main className="min-h-screen bg-[#070707] px-4 py-5 text-stone-100 sm:px-6">
+      <header className="mx-auto flex max-w-[1500px] items-center justify-between gap-4 rounded-lg border border-[#2A2620] bg-[#11100E]/90 px-5 py-4 shadow-[0_18px_60px_rgba(0,0,0,0.35)]">
         <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-lg border border-amber-500/25 bg-amber-500/10 text-amber-300">
+          <div className="flex size-10 items-center justify-center rounded-md border border-amber-500/25 bg-amber-500/10 text-amber-300">
             <Orbit size={22} />
           </div>
+
           <div>
             <h1 className="text-xl font-semibold text-stone-50">
               ExoSim
             </h1>
+
             <p className="text-xs uppercase tracking-[0.24em] text-stone-500">
               Exoplanet Transit Lab
-            </p>          </div>        </div>
+            </p>
+          </div>
+        </div>
+
         <nav className="hidden items-center gap-6 text-sm text-stone-400 md:flex">
-          <a            href="#lab"
+          <a
+            href="#lab"
             className="transition hover:text-amber-300"
           >
             Lab
           </a>
-          <a            href="#library"
+
+          <a
+            href="#library"
             className="transition hover:text-amber-300"
           >
             NASA Library
           </a>
-          <a            href="#science"
+
+          <a
+            href="#science"
             className="transition hover:text-amber-300"
           >
             Science Math
-          </a>        </nav>
-        <div className="flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-200">
-          <Activity size={14} />
-          TELEMETRY ACTIVE
-        </div>      </header>
-      <section        id="lab"
-        className="mx-auto mt-6 grid max-w-7xl gap-5 lg:grid-cols-[1fr_340px]"
+          </a>
+        </nav>
+
+        <div className="flex items-center gap-2 border-l-2 border-amber-400/70 pl-3 font-mono text-[10px] uppercase tracking-[0.18em] text-amber-200">
+          <span className="size-1.5 bg-amber-300" />
+          Telemetry active
+        </div>
+      </header>
+
+      <section
+        id="lab"
+        className="mx-auto mt-6 grid max-w-[1500px] gap-5 lg:grid-cols-[minmax(0,1fr)_330px]"
       >
         <div className="rounded-lg border border-[#2A2620] bg-[#11100E]/90 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
           <div className="mb-4 flex items-center justify-between">
@@ -74,54 +101,167 @@ export default function Home() {
               <h2 className="text-lg font-semibold text-stone-50">
                 Orbital View
               </h2>
+
               <p className="text-sm text-stone-500">
-                Live 3D view of the star and orbiting exoplanet.
-              </p>            </div>
-            <Orbit              className="text-amber-300"
+                Live 3D view of the star and orbiting exoplanet
+              </p>
+            </div>
+
+            <Orbit
+              className="text-amber-300"
               size={22}
             />
           </div>
-          <div className="relative h-[360px] overflow-hidden rounded-lg border border-[#2A2620] bg-[#050505] sm:h-[440px] lg:h-auto lg:aspect-video">
-            <OrbitalScene    
+
+          <div className="relative h-[440px] overflow-hidden rounded-lg border border-[#2A2620] bg-[#050505] sm:h-[520px] lg:h-auto lg:aspect-[16/10]">
+            <OrbitalScene
               planetRadius={planetRadius}
               starRadius={starRadius}
+              isPaused={isPaused}
+              simulationSpeed={simulationSpeed}
+              resetSignal={resetSignal}
               onOrbitUpdate={handleOrbitUpdate}
             />
 
-            <div className="pointer-events-none absolute bottom-4 left-4 rounded-md border border-[#3A3024] bg-[#0B0907]/80 px-3 py-2 backdrop-blur-sm">
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">
-                Target system
-              </p>
-              <p className="mt-1 font-mono text-xs text-amber-200">
-                EXO-001
-              </p>            </div>          </div>        </div>
+            <div className="absolute right-3 top-3 z-10 max-w-[calc(100%-1.5rem)] border border-[#44392C] bg-[#0A0907]/92 shadow-[0_12px_35px_rgba(0,0,0,0.45)] backdrop-blur-md sm:right-4 sm:top-4">
+              <div className="flex items-stretch">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsPaused(
+                      (current) => !current,
+                    );
+                  }}
+                  className="flex min-w-24 items-center justify-center gap-2 border-r border-[#44392C] px-3 py-2 font-mono text-[10px] uppercase tracking-[0.12em] text-stone-200 transition hover:bg-amber-500/10 hover:text-amber-200"
+                >
+                  {isPaused ? (
+                    <Play size={14} />
+                  ) : (
+                    <Pause size={14} />
+                  )}
+
+                  {isPaused ? "Resume" : "Pause"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  aria-label="Reset orbit"
+                  title="Reset orbit"
+                  className="flex w-10 items-center justify-center border-r border-[#44392C] text-stone-400 transition hover:bg-amber-500/10 hover:text-amber-200"
+                >
+                  <RotateCcw size={14} />
+                </button>
+
+                <div className="w-44 px-3 py-1.5">            
+                  <div className="mb-0.5 flex items-center justify-between">
+                    <span className="font-mono text-[8px] uppercase tracking-[0.14em] text-stone-600">
+                      Speed
+                    </span>
+
+                    <span className="font-mono text-[10px] text-amber-200">
+                      {simulationSpeed.toFixed(1)}×
+                    </span>
+                  </div>
+
+                  <input
+                    type="range"
+                    min="0.2"
+                    max="3"
+                    step="0.1"
+                    value={simulationSpeed}
+                    onChange={(event) => {
+                      setSimulationSpeed(
+                        Number(event.target.value),
+                      );
+                    }}
+                    aria-label="Simulation speed"
+                    className="h-1 w-full cursor-pointer accent-amber-400"
+                  />
+
+                  <div className="mt-0.5 flex justify-between font-mono text-[8px] text-stone-600">
+                    <span>0.2×</span>
+                    <span>1.6×</span>
+                    <span>3.0×</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="pointer-events-none absolute bottom-4 left-4 border-l-2 border-amber-400/60 bg-[#0B0907]/75 px-3 py-2 backdrop-blur-sm">
+              <div className="flex items-center gap-5">
+                <div>
+                  <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">
+                    Target
+                  </p>
+
+                  <p className="mt-1 font-mono text-xs text-amber-200">
+                    EXO-001
+                  </p>
+                </div>
+
+                <div>
+                  <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">
+                    Orbital phase
+                  </p>
+
+                  <p className="mt-1 font-mono text-xs text-stone-300">
+                    {orbitalPhase.toFixed(3)}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">
+                    State
+                  </p>
+
+                  <p className="mt-1 font-mono text-xs text-stone-300">
+                    {isPaused ? "PAUSED" : "RUNNING"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <aside className="rounded-lg border border-[#2A2620] bg-[#11100E]/90 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
           <div className="mb-5 flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-stone-50">
                 Mission Controls
               </h2>
+
               <p className="text-sm text-stone-500">
                 Simulation parameters
-              </p>            </div>
-            <Sigma              className="text-rose-300"
+              </p>
+            </div>
+
+            <Sigma
+              className="text-rose-300"
               size={22}
             />
           </div>
+
           <div className="space-y-4">
-            <div className="rounded-lg border border-[#3A3024] bg-[#090807] p-4">
+            <div className="rounded-md border border-[#3A3024] bg-[#090807] p-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm text-stone-500">
                     Planet Radius
                   </p>
+
                   <p className="mt-1 font-mono text-2xl text-amber-200">
-                    {planetRadius.toFixed(1)} R
-                  </p>                </div>
-                <span className="rounded-full border border-amber-500/25 bg-amber-500/10 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-amber-300">
-                  Interactive
-                </span>              </div>
-              <input                type="range"
+                    {planetRadius.toFixed(1)} R⊕
+                  </p>
+                </div>
+
+                <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-600">
+                  Input 01
+                </span>
+              </div>
+
+              <input
+                type="range"
                 min="0.5"
                 max="2"
                 step="0.1"
@@ -136,20 +276,30 @@ export default function Home() {
               />
 
               <div className="mt-2 flex justify-between font-mono text-[10px] text-stone-600">
-                <span>0.5 R</span>                <span>2.0 R</span>              </div>            </div>
-            <div className="rounded-lg border border-[#3A3024] bg-[#090807] p-4">
+                <span>0.5 R⊕</span>
+                <span>2.0 R⊕</span>
+              </div>
+            </div>
+
+            <div className="rounded-md border border-[#3A3024] bg-[#090807] p-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm text-stone-500">
                     Star Radius
                   </p>
+
                   <p className="mt-1 font-mono text-2xl text-stone-200">
-                    {starRadius.toFixed(1)} R
-                  </p>                </div>
-                <span className="rounded-full border border-stone-500/20 bg-stone-500/10 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-stone-300">
-                  Interactive
-                </span>              </div>
-              <input                type="range"
+                    {starRadius.toFixed(1)} R☉
+                  </p>
+                </div>
+
+                <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-600">
+                  Input 02
+                </span>
+              </div>
+
+              <input
+                type="range"
                 min="0.5"
                 max="1.5"
                 step="0.1"
@@ -164,30 +314,48 @@ export default function Home() {
               />
 
               <div className="mt-2 flex justify-between font-mono text-[10px] text-stone-600">
-                <span>0.5 R</span>                <span>1.5 R</span>              </div>            </div>
-            <div className="rounded-lg border border-rose-500/20 bg-[#090807] p-4">
+                <span>0.5 R☉</span>
+                <span>1.5 R☉</span>
+              </div>
+            </div>
+
+            <div className="rounded-md border border-rose-500/20 bg-[#090807] p-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm text-stone-500">
                     Transit Depth
                   </p>
+
                   <p className="mt-1 font-mono text-2xl text-rose-300">
                     {transitDepthPercent.toFixed(4)}%
-                  </p>                </div>
-                <span className="rounded-full border border-rose-500/20 bg-rose-500/10 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-rose-300">
-                  Live
-                </span>              </div>
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.16em] text-rose-300">
+                  <span className="size-1.5 bg-rose-300" />
+                  Calculated
+                </div>
+              </div>
+
               <div className="mt-4 border-t border-[#2A2620] pt-3">
                 <p className="font-mono text-xs text-stone-500">
-                  F / F = (R / R)
+                  ΔF / F = (Rₚ / R★)²
                 </p>
+
                 <p className="mt-1 text-xs text-stone-600">
                   Expected brightness blocked during transit
-                </p>              </div>            </div>          </div>        </aside>      </section>
-      <section className="mx-auto mt-5 max-w-7xl rounded-lg border border-[#2A2620] bg-[#11100E]/90 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
+                </p>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section className="mx-auto mt-5 max-w-[1500px] rounded-lg border border-[#2A2620] bg-[#11100E]/90 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Database              className="text-rose-300"
+            <Database
+              className="text-rose-300"
               size={20}
             />
 
@@ -195,16 +363,26 @@ export default function Home() {
               <h2 className="text-lg font-semibold text-stone-50">
                 Live Light-Curve
               </h2>
+
               <p className="text-sm text-stone-500">
                 Normalized stellar brightness across one orbit
-              </p>            </div>          </div>
-          <div className="flex items-center gap-2 rounded-full border border-rose-500/20 bg-rose-500/10 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-rose-300">
-            <span className="size-1.5 animate-pulse rounded-full bg-rose-300" />
-            Photometry live
-          </div>        </div>
-        <div className="h-[320px] rounded-lg border border-[#2A2620] bg-[#090807] p-4 sm:h-[360px] sm:p-5">
-          <LightCurveChart            orbitalPhase={orbitalPhase}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 border-l-2 border-rose-400/70 pl-3 font-mono text-[10px] uppercase tracking-[0.18em] text-rose-300">
+            <span className="size-1.5 animate-pulse bg-rose-300" />
+            Photometry / live
+          </div>
+        </div>
+
+        <div className="h-[320px] rounded-md border border-[#2A2620] bg-[#090807] p-4 sm:h-[360px] sm:p-5">
+          <LightCurveChart
+            orbitalPhase={orbitalPhase}
             transitDepthPercent={transitDepthPercent}
           />
-        </div>      </section>    </main>  );
+        </div>
+      </section>
+    </main>
+  );
 }

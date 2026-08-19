@@ -18,15 +18,23 @@ import type { Group } from "three";
 type OrbitalSceneProps = {
   planetRadius?: number;
   starRadius?: number;
+  isPaused?: boolean;
+  simulationSpeed?: number;
+  resetSignal?: number;
   onOrbitUpdate?: (phase: number) => void;
 };
 
 type StarProps = {
   radius: number;
+  isPaused: boolean;
+  simulationSpeed: number;
 };
 
 type PlanetProps = {
   radius: number;
+  isPaused: boolean;
+  simulationSpeed: number;
+  resetSignal: number;
   onOrbitUpdate?: (phase: number) => void;
 };
 
@@ -130,7 +138,11 @@ function createStarTexture() {
   return texture;
 }
 
-function Star({ radius }: StarProps) {
+function Star({
+  radius,
+  isPaused,
+  simulationSpeed,
+}: StarProps) {
   const starGroup = useRef<Group>(null);
 
   const starTexture = useMemo(() => {
@@ -144,22 +156,21 @@ function Star({ radius }: StarProps) {
   }, [starTexture]);
 
   useFrame((_, delta) => {
-    if (!starGroup.current) {
+    if (!starGroup.current || isPaused) {
       return;
     }
 
-    starGroup.current.rotation.y += delta * 0.06;
+    starGroup.current.rotation.y +=
+      delta * 0.06 * simulationSpeed;
   });
 
   return (
     <group ref={starGroup}>
       <mesh>
-        <sphereGeometry
-          args={[radius, 96, 96]}
+        <sphereGeometry          args={[radius, 96, 96]}
         />
 
-        <meshStandardMaterial
-          map={starTexture}
+        <meshStandardMaterial          map={starTexture}
           emissiveMap={starTexture}
           color="#fff1d0"
           emissive="#d95518"
@@ -168,14 +179,11 @@ function Star({ radius }: StarProps) {
           metalness={0}
         />
       </mesh>
-
       <mesh scale={1.06}>
-        <sphereGeometry
-          args={[radius, 64, 64]}
+        <sphereGeometry          args={[radius, 64, 64]}
         />
 
-        <meshBasicMaterial
-          color="#f3a33a"
+        <meshBasicMaterial          color="#f3a33a"
           transparent
           opacity={0.14}
           side={BackSide}
@@ -183,14 +191,11 @@ function Star({ radius }: StarProps) {
           depthWrite={false}
         />
       </mesh>
-
       <mesh scale={1.13}>
-        <sphereGeometry
-          args={[radius, 64, 64]}
+        <sphereGeometry          args={[radius, 64, 64]}
         />
 
-        <meshBasicMaterial
-          color="#d66b2c"
+        <meshBasicMaterial          color="#d66b2c"
           transparent
           opacity={0.055}
           side={BackSide}
@@ -198,15 +203,12 @@ function Star({ radius }: StarProps) {
           depthWrite={false}
         />
       </mesh>
-
-      <pointLight
-        color="#f2a74f"
+      <pointLight        color="#f2a74f"
         intensity={34}
         distance={18}
         decay={2}
       />
-    </group>
-  );
+    </group>  );
 }
 
 function OrbitPath() {
@@ -231,8 +233,7 @@ function OrbitPath() {
   }, []);
 
   return (
-    <Line
-      points={points}
+    <Line      points={points}
       color="#d49a46"
       lineWidth={2}
       transparent
@@ -243,6 +244,9 @@ function OrbitPath() {
 
 function Planet({
   radius,
+  isPaused,
+  simulationSpeed,
+  resetSignal,
   onOrbitUpdate,
 }: PlanetProps) {
   const planetGroup = useRef<Group>(null);
@@ -257,14 +261,34 @@ function Planet({
       onOrbitUpdate;
   }, [onOrbitUpdate]);
 
+  useEffect(() => {
+    orbitProgress.current = 0;
+
+    if (planetGroup.current) {
+      planetGroup.current.position.set(
+        3,
+        0.12,
+        0,
+      );
+    }
+
+    orbitUpdateCallback.current?.(0);
+  }, [resetSignal]);
+
   useFrame((_, delta) => {
     if (!planetGroup.current) {
       return;
     }
 
-    orbitProgress.current =
-      (orbitProgress.current + delta * 0.45) %
-      (Math.PI * 2);
+    if (!isPaused) {
+      orbitProgress.current =
+        (orbitProgress.current +
+          delta * 0.45 * simulationSpeed) %
+        (Math.PI * 2);
+
+      planetGroup.current.rotation.y +=
+        delta * 0.5 * simulationSpeed;
+    }
 
     const angle = orbitProgress.current;
 
@@ -277,9 +301,6 @@ function Planet({
       y,
       z,
     );
-
-    planetGroup.current.rotation.y +=
-      delta * 0.5;
 
     const currentTime = performance.now();
 
@@ -301,35 +322,31 @@ function Planet({
   return (
     <group ref={planetGroup}>
       <mesh>
-        <sphereGeometry
-          args={[radius, 48, 48]}
+        <sphereGeometry          args={[radius, 48, 48]}
         />
 
-        <meshStandardMaterial
-          color="#703d32"
+        <meshStandardMaterial          color="#703d32"
           roughness={0.9}
           metalness={0.05}
         />
       </mesh>
-
       <mesh scale={1.04}>
-        <sphereGeometry
-          args={[radius, 48, 48]}
+        <sphereGeometry          args={[radius, 48, 48]}
         />
 
-        <meshBasicMaterial
-          color="#b46146"
+        <meshBasicMaterial          color="#b46146"
           transparent
           opacity={0.08}
         />
-      </mesh>
-    </group>
-  );
+      </mesh>    </group>  );
 }
 
 export default function OrbitalScene({
   planetRadius = 1,
   starRadius = 1,
+  isPaused = false,
+  simulationSpeed = 1,
+  resetSignal = 0,
   onOrbitUpdate,
 }: OrbitalSceneProps) {
   const renderedPlanetRadius =
@@ -340,11 +357,10 @@ export default function OrbitalScene({
 
   return (
     <div className="h-full min-h-[360px] w-full">
-      <Canvas
-        camera={{
+      <Canvas        camera={{
           position: [0, 0, 7],
           fov: 45,
-        }}
+      }}
         gl={{
           antialias: true,
           alpha: true,
@@ -352,33 +368,36 @@ export default function OrbitalScene({
       >
         <ambientLight intensity={0.1} />
 
-        <directionalLight
-          position={[4, 3, 6]}
+        <directionalLight          position={[4, 3, 6]}
           color="#ffd6a0"
           intensity={1.2}
         />
 
-        <Stars
-          radius={45}
+        <Stars          radius={45}
           depth={25}
           count={900}
           factor={2}
           saturation={0}
           fade
-          speed={0.15}
+          speed={
+            isPaused
+              ? 0
+              : 0.15 * simulationSpeed
+          }
         />
 
         <OrbitPath />
 
-        <Star
-          radius={renderedStarRadius}
+        <Star          radius={renderedStarRadius}
+          isPaused={isPaused}
+          simulationSpeed={simulationSpeed}
         />
 
-        <Planet
-          radius={renderedPlanetRadius}
+        <Planet          radius={renderedPlanetRadius}
+          isPaused={isPaused}
+          simulationSpeed={simulationSpeed}
+          resetSignal={resetSignal}
           onOrbitUpdate={onOrbitUpdate}
         />
-      </Canvas>
-    </div>
-  );
+      </Canvas>    </div>  );
 }
