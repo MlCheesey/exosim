@@ -82,7 +82,8 @@ export default function Home() {
             />
           </div>
           <div className="relative h-[360px] overflow-hidden rounded-lg border border-[#2A2620] bg-[#050505] sm:h-[440px] lg:h-auto lg:aspect-video">
-            <OrbitalScene              planetRadius={planetRadius}
+            <OrbitalScene    
+              planetRadius={planetRadius}
               starRadius={starRadius}
               onOrbitUpdate={handleOrbitUpdate}
             />

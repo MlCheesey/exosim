@@ -18,6 +18,7 @@ import type { Group } from "three";
 type OrbitalSceneProps = {
   planetRadius?: number;
   starRadius?: number;
+  onOrbitUpdate?: (phase: number) => void;
 };
 
 type StarProps = {
@@ -26,6 +27,7 @@ type StarProps = {
 
 type PlanetProps = {
   radius: number;
+  onOrbitUpdate?: (phase: number) => void;
 };
 
 function createStarTexture() {
@@ -45,18 +47,28 @@ function createStarTexture() {
       const v = y / height;
 
       const flowingBands =
-        Math.sin(u * 45 + Math.sin(v * 18) * 2.5) * 0.12;
+        Math.sin(
+          u * 45 + Math.sin(v * 18) * 2.5,
+        ) * 0.12;
 
       const smallerCells =
-        Math.sin(v * 60 + Math.cos(u * 24) * 3) * 0.09;
+        Math.sin(
+          v * 60 + Math.cos(u * 24) * 3,
+        ) * 0.09;
 
-      const fineDetail = Math.sin((u + v) * 95) * 0.045;
+      const fineDetail =
+        Math.sin((u + v) * 95) * 0.045;
 
       let brightness =
-        0.72 + flowingBands + smallerCells + fineDetail;
+        0.72 +
+        flowingBands +
+        smallerCells +
+        fineDetail;
 
       for (const spot of sunspots) {
-        let horizontalDistance = Math.abs(u - spot.x);
+        let horizontalDistance = Math.abs(
+          u - spot.x,
+        );
 
         horizontalDistance = Math.min(
           horizontalDistance,
@@ -71,22 +83,32 @@ function createStarTexture() {
         );
 
         if (distance < spot.radius) {
-          const spotStrength = 1 - distance / spot.radius;
+          const spotStrength =
+            1 - distance / spot.radius;
+
           brightness -= spotStrength * 0.48;
         }
       }
 
-      brightness = Math.max(0.16, Math.min(1, brightness));
+      brightness = Math.max(
+        0.16,
+        Math.min(1, brightness),
+      );
 
       const pixelIndex = (y * width + x) * 4;
 
-      pixelData[pixelIndex] = Math.round(220 + brightness * 35);
+      pixelData[pixelIndex] = Math.round(
+        220 + brightness * 35,
+      );
+
       pixelData[pixelIndex + 1] = Math.round(
         70 + brightness * 145,
       );
+
       pixelData[pixelIndex + 2] = Math.round(
         10 + brightness * 55,
       );
+
       pixelData[pixelIndex + 3] = 255;
     }
   }
@@ -132,9 +154,12 @@ function Star({ radius }: StarProps) {
   return (
     <group ref={starGroup}>
       <mesh>
-        <sphereGeometry args={[radius, 96, 96]} />
+        <sphereGeometry
+          args={[radius, 96, 96]}
+        />
 
-        <meshStandardMaterial          map={starTexture}
+        <meshStandardMaterial
+          map={starTexture}
           emissiveMap={starTexture}
           color="#fff1d0"
           emissive="#d95518"
@@ -143,10 +168,14 @@ function Star({ radius }: StarProps) {
           metalness={0}
         />
       </mesh>
-      <mesh scale={1.06}>
-        <sphereGeometry args={[radius, 64, 64]} />
 
-        <meshBasicMaterial          color="#f3a33a"
+      <mesh scale={1.06}>
+        <sphereGeometry
+          args={[radius, 64, 64]}
+        />
+
+        <meshBasicMaterial
+          color="#f3a33a"
           transparent
           opacity={0.14}
           side={BackSide}
@@ -154,10 +183,14 @@ function Star({ radius }: StarProps) {
           depthWrite={false}
         />
       </mesh>
-      <mesh scale={1.13}>
-        <sphereGeometry args={[radius, 64, 64]} />
 
-        <meshBasicMaterial          color="#d66b2c"
+      <mesh scale={1.13}>
+        <sphereGeometry
+          args={[radius, 64, 64]}
+        />
+
+        <meshBasicMaterial
+          color="#d66b2c"
           transparent
           opacity={0.055}
           side={BackSide}
@@ -165,29 +198,41 @@ function Star({ radius }: StarProps) {
           depthWrite={false}
         />
       </mesh>
-      <pointLight        color="#f2a74f"
+
+      <pointLight
+        color="#f2a74f"
         intensity={34}
         distance={18}
         decay={2}
       />
-    </group>  );
+    </group>
+  );
 }
 
 function OrbitPath() {
   const points = useMemo(() => {
-    return Array.from({ length: 129 }, (_, index) => {
-      const angle = (index / 128) * Math.PI * 2;
+    return Array.from(
+      { length: 129 },
+      (_, index) => {
+        const angle =
+          (index / 128) * Math.PI * 2;
 
-      const x = Math.cos(angle) * 3;
-      const y = 0.12;
-      const z = Math.sin(angle) * 2.2;
+        const x = Math.cos(angle) * 3;
+        const y = 0.12;
+        const z = Math.sin(angle) * 2.2;
 
-      return [x, y, z] as [number, number, number];
-    });
+        return [x, y, z] as [
+          number,
+          number,
+          number,
+        ];
+      },
+    );
   }, []);
 
   return (
-    <Line      points={points}
+    <Line
+      points={points}
       color="#d49a46"
       lineWidth={2}
       transparent
@@ -196,59 +241,110 @@ function OrbitPath() {
   );
 }
 
-function Planet({ radius }: PlanetProps) {
+function Planet({
+  radius,
+  onOrbitUpdate,
+}: PlanetProps) {
   const planetGroup = useRef<Group>(null);
   const orbitProgress = useRef(0);
+  const lastUpdateTime = useRef(0);
+
+  const orbitUpdateCallback =
+    useRef(onOrbitUpdate);
+
+  useEffect(() => {
+    orbitUpdateCallback.current =
+      onOrbitUpdate;
+  }, [onOrbitUpdate]);
 
   useFrame((_, delta) => {
     if (!planetGroup.current) {
       return;
     }
 
-    orbitProgress.current += delta * 0.45;
+    orbitProgress.current =
+      (orbitProgress.current + delta * 0.45) %
+      (Math.PI * 2);
 
     const angle = orbitProgress.current;
+
     const x = Math.cos(angle) * 3;
     const y = 0.12;
     const z = Math.sin(angle) * 2.2;
 
-    planetGroup.current.position.set(x, y, z);
-    planetGroup.current.rotation.y += delta * 0.5;
+    planetGroup.current.position.set(
+      x,
+      y,
+      z,
+    );
+
+    planetGroup.current.rotation.y +=
+      delta * 0.5;
+
+    const currentTime = performance.now();
+
+    if (
+      currentTime - lastUpdateTime.current >=
+      50
+    ) {
+      const orbitalPhase =
+        angle / (Math.PI * 2);
+
+      orbitUpdateCallback.current?.(
+        orbitalPhase,
+      );
+
+      lastUpdateTime.current = currentTime;
+    }
   });
 
   return (
     <group ref={planetGroup}>
       <mesh>
-        <sphereGeometry args={[radius, 48, 48]} />
+        <sphereGeometry
+          args={[radius, 48, 48]}
+        />
 
-        <meshStandardMaterial          color="#703d32"
+        <meshStandardMaterial
+          color="#703d32"
           roughness={0.9}
           metalness={0.05}
         />
       </mesh>
-      <mesh scale={1.04}>
-        <sphereGeometry args={[radius, 48, 48]} />
 
-        <meshBasicMaterial          color="#b46146"
+      <mesh scale={1.04}>
+        <sphereGeometry
+          args={[radius, 48, 48]}
+        />
+
+        <meshBasicMaterial
+          color="#b46146"
           transparent
           opacity={0.08}
         />
-      </mesh>    </group>  );
+      </mesh>
+    </group>
+  );
 }
 
 export default function OrbitalScene({
   planetRadius = 1,
   starRadius = 1,
+  onOrbitUpdate,
 }: OrbitalSceneProps) {
-  const renderedPlanetRadius = 0.38 * planetRadius;
-  const renderedStarRadius = 1.35 * starRadius;
+  const renderedPlanetRadius =
+    0.38 * planetRadius;
+
+  const renderedStarRadius =
+    1.35 * starRadius;
 
   return (
     <div className="h-full min-h-[360px] w-full">
-      <Canvas        camera={{
+      <Canvas
+        camera={{
           position: [0, 0, 7],
           fov: 45,
-      }}
+        }}
         gl={{
           antialias: true,
           alpha: true,
@@ -256,12 +352,14 @@ export default function OrbitalScene({
       >
         <ambientLight intensity={0.1} />
 
-        <directionalLight          position={[4, 3, 6]}
+        <directionalLight
+          position={[4, 3, 6]}
           color="#ffd6a0"
           intensity={1.2}
         />
 
-        <Stars          radius={45}
+        <Stars
+          radius={45}
           depth={25}
           count={900}
           factor={2}
@@ -271,7 +369,16 @@ export default function OrbitalScene({
         />
 
         <OrbitPath />
-        <Star radius={renderedStarRadius} /> 
-        <Planet radius={renderedPlanetRadius} />
-      </Canvas>    </div>  );
+
+        <Star
+          radius={renderedStarRadius}
+        />
+
+        <Planet
+          radius={renderedPlanetRadius}
+          onOrbitUpdate={onOrbitUpdate}
+        />
+      </Canvas>
+    </div>
+  );
 }
