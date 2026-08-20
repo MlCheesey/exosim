@@ -15,6 +15,7 @@ import OrbitalScene from "@/components/OrbitalScene";
 export default function Home() {
   const [planetRadius, setPlanetRadius] = useState(1);
   const [starRadius, setStarRadius] = useState(1);
+  const [noisePpm, setNoisePpm] = useState(50);
   const [orbitalPhase, setOrbitalPhase] = useState(0);
 
   const [isPaused, setIsPaused] = useState(false);
@@ -153,7 +154,7 @@ export default function Home() {
                   <RotateCcw size={14} />
                 </button>
 
-                <div className="w-44 px-3 py-1.5">            
+                <div className="w-44 px-3 py-1.5">
                   <div className="mb-0.5 flex items-center justify-between">
                     <span className="font-mono text-[8px] uppercase tracking-[0.14em] text-stone-600">
                       Speed
@@ -319,6 +320,49 @@ export default function Home() {
               </div>
             </div>
 
+            <div className="rounded-md border border-[#3A3024] bg-[#090807] p-4">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm text-stone-500">
+                    Observation Noise
+                  </p>
+
+                  <p className="mt-1 font-mono text-2xl text-stone-200">
+                    {noisePpm.toFixed(0)} ppm
+                  </p>
+                </div>
+
+                <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-600">
+                  Input 03
+                </span>
+              </div>
+
+              <input
+                type="range"
+                min="0"
+                max="300"
+                step="10"
+                value={noisePpm}
+                onChange={(event) => {
+                  setNoisePpm(
+                    Number(event.target.value),
+                  );
+                }}
+                aria-label="Observation noise"
+                className="mt-5 h-1.5 w-full cursor-pointer accent-rose-300"
+              />
+
+              <div className="mt-2 flex justify-between font-mono text-[10px] text-stone-600">
+                <span>0 ppm</span>
+                <span>150 ppm</span>
+                <span>300 ppm</span>
+              </div>
+
+              <p className="mt-3 border-t border-[#2A2620] pt-3 text-xs leading-relaxed text-stone-600">
+                Simulated measurement uncertainty from the telescope and detector
+              </p>
+            </div>
+
             <div className="rounded-md border border-rose-500/20 bg-[#090807] p-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -365,7 +409,7 @@ export default function Home() {
               </h2>
 
               <p className="text-sm text-stone-500">
-                Normalized stellar brightness across one orbit
+                Theoretical model and simulated telescope observation
               </p>
             </div>
           </div>
@@ -376,10 +420,11 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="h-[320px] rounded-md border border-[#2A2620] bg-[#090807] p-4 sm:h-[360px] sm:p-5">
+        <div className="h-[360px] rounded-md border border-[#2A2620] bg-[#090807] p-4 sm:h-[400px] sm:p-5">
           <LightCurveChart
             orbitalPhase={orbitalPhase}
             transitDepthPercent={transitDepthPercent}
+            noisePpm={noisePpm}
           />
         </div>
       </section>
