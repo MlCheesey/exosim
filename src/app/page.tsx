@@ -15,6 +15,8 @@ import OrbitalScene from "@/components/OrbitalScene";
 export default function Home() {
   const [planetRadius, setPlanetRadius] = useState(1);
   const [starRadius, setStarRadius] = useState(1);
+  const [orbitalInclination, setOrbitalInclination] =
+    useState(90);
   const [noisePpm, setNoisePpm] = useState(50);
   const [orbitalPhase, setOrbitalPhase] = useState(0);
 
@@ -29,8 +31,60 @@ export default function Home() {
     planetRadius /
     (starRadius * solarRadiusInEarthRadii);
 
-  const transitDepthPercent =
+  const maximumTransitDepthPercent =
     planetToStarRadiusRatio ** 2 * 100;
+
+  const renderedPlanetRadius =
+    0.38 * planetRadius;
+
+  const renderedStarRadius =
+    1.35 * starRadius;
+
+  const inclinationRadians =
+    (orbitalInclination * Math.PI) / 180;
+
+  const projectedTransitOffset = Math.abs(
+    0.12 +
+      4 * Math.cos(inclinationRadians),
+  );
+
+  const fullTransitLimit = Math.max(
+    renderedStarRadius -
+      renderedPlanetRadius,
+    0,
+  );
+
+  const noTransitLimit =
+    renderedStarRadius +
+    renderedPlanetRadius;
+
+  let transitVisibility = 1;
+
+  if (
+    projectedTransitOffset >= noTransitLimit
+  ) {
+    transitVisibility = 0;
+  } else if (
+    projectedTransitOffset >
+    fullTransitLimit
+  ) {
+    transitVisibility =
+      (noTransitLimit -
+        projectedTransitOffset) /
+      (noTransitLimit -
+        fullTransitLimit);
+  }
+
+  const effectiveTransitDepthPercent =
+    maximumTransitDepthPercent *
+    transitVisibility;
+
+  const transitGeometry =
+    transitVisibility === 0
+      ? "No transit"
+      : transitVisibility < 0.999
+        ? "Grazing"
+        : "Full transit";
 
   const handleOrbitUpdate = useCallback(
     (phase: number) => {
@@ -118,6 +172,9 @@ export default function Home() {
             <OrbitalScene
               planetRadius={planetRadius}
               starRadius={starRadius}
+              orbitalInclination={
+                orbitalInclination
+              }
               isPaused={isPaused}
               simulationSpeed={simulationSpeed}
               resetSignal={resetSignal}
@@ -208,6 +265,16 @@ export default function Home() {
 
                   <p className="mt-1 font-mono text-xs text-stone-300">
                     {orbitalPhase.toFixed(3)}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">
+                    Inclination
+                  </p>
+
+                  <p className="mt-1 font-mono text-xs text-stone-300">
+                    {orbitalInclination.toFixed(0)}°
                   </p>
                 </div>
 
@@ -324,6 +391,49 @@ export default function Home() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm text-stone-500">
+                    Orbit Inclination
+                  </p>
+
+                  <p className="mt-1 font-mono text-2xl text-amber-200">
+                    {orbitalInclination.toFixed(0)}°
+                  </p>
+                </div>
+
+                <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-600">
+                  Input 03
+                </span>
+              </div>
+
+              <input
+                type="range"
+                min="60"
+                max="90"
+                step="1"
+                value={orbitalInclination}
+                onChange={(event) => {
+                  setOrbitalInclination(
+                    Number(event.target.value),
+                  );
+                }}
+                aria-label="Orbital inclination"
+                className="mt-5 h-1.5 w-full cursor-pointer accent-amber-400"
+              />
+
+              <div className="mt-2 flex justify-between font-mono text-[10px] text-stone-600">
+                <span>60° tilted</span>
+                <span>75°</span>
+                <span>90° edge-on</span>
+              </div>
+
+              <p className="mt-3 border-t border-[#2A2620] pt-3 text-xs leading-relaxed text-stone-600">
+                Lower angles move the planet above or below the star
+              </p>
+            </div>
+
+            <div className="rounded-md border border-[#3A3024] bg-[#090807] p-4">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm text-stone-500">
                     Observation Noise
                   </p>
 
@@ -333,7 +443,7 @@ export default function Home() {
                 </div>
 
                 <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-600">
-                  Input 03
+                  Input 04
                 </span>
               </div>
 
@@ -357,37 +467,57 @@ export default function Home() {
                 <span>150 ppm</span>
                 <span>300 ppm</span>
               </div>
-
-              <p className="mt-3 border-t border-[#2A2620] pt-3 text-xs leading-relaxed text-stone-600">
-                Simulated measurement uncertainty from the telescope and detector
-              </p>
             </div>
 
             <div className="rounded-md border border-rose-500/20 bg-[#090807] p-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm text-stone-500">
-                    Transit Depth
+                    Transit Signal
                   </p>
 
                   <p className="mt-1 font-mono text-2xl text-rose-300">
-                    {transitDepthPercent.toFixed(4)}%
+                    {effectiveTransitDepthPercent.toFixed(
+                      4,
+                    )}
+                    %
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.16em] text-rose-300">
-                  <span className="size-1.5 bg-rose-300" />
-                  Calculated
+                <div
+                  className={
+                    transitVisibility === 0
+                      ? "flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500"
+                      : transitVisibility < 0.999
+                        ? "flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.16em] text-amber-200"
+                        : "flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.16em] text-rose-300"
+                  }
+                >
+                  <span
+                    className={
+                      transitVisibility === 0
+                        ? "size-1.5 bg-stone-600"
+                        : transitVisibility < 0.999
+                          ? "size-1.5 bg-amber-300"
+                          : "size-1.5 bg-rose-300"
+                    }
+                  />
+
+                  {transitGeometry}
                 </div>
               </div>
 
               <div className="mt-4 border-t border-[#2A2620] pt-3">
                 <p className="font-mono text-xs text-stone-500">
-                  ΔF / F = (Rₚ / R★)²
+                  Maximum depth:{" "}
+                  {maximumTransitDepthPercent.toFixed(
+                    4,
+                  )}
+                  %
                 </p>
 
                 <p className="mt-1 text-xs text-stone-600">
-                  Expected brightness blocked during transit
+                  Visible signal after orbital alignment
                 </p>
               </div>
             </div>
@@ -423,7 +553,9 @@ export default function Home() {
         <div className="h-[360px] rounded-md border border-[#2A2620] bg-[#090807] p-4 sm:h-[400px] sm:p-5">
           <LightCurveChart
             orbitalPhase={orbitalPhase}
-            transitDepthPercent={transitDepthPercent}
+            transitDepthPercent={
+              effectiveTransitDepthPercent
+            }
             noisePpm={noisePpm}
           />
         </div>

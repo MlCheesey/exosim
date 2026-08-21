@@ -1,8 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Line, Stars } from "@react-three/drei";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
+import {
+  Canvas,
+  useFrame,
+} from "@react-three/fiber";
+import {
+  Line,
+  Stars,
+} from "@react-three/drei";
 import {
   AdditiveBlending,
   BackSide,
@@ -18,10 +28,13 @@ import type { Group } from "three";
 type OrbitalSceneProps = {
   planetRadius?: number;
   starRadius?: number;
+  orbitalInclination?: number;
   isPaused?: boolean;
   simulationSpeed?: number;
   resetSignal?: number;
-  onOrbitUpdate?: (phase: number) => void;
+  onOrbitUpdate?: (
+    phase: number,
+  ) => void;
 };
 
 type StarProps = {
@@ -30,42 +43,107 @@ type StarProps = {
   simulationSpeed: number;
 };
 
+type OrbitPathProps = {
+  inclination: number;
+};
+
 type PlanetProps = {
   radius: number;
+  inclination: number;
   isPaused: boolean;
   simulationSpeed: number;
   resetSignal: number;
-  onOrbitUpdate?: (phase: number) => void;
+  onOrbitUpdate?: (
+    phase: number,
+  ) => void;
 };
+
+type OrbitPosition = {
+  x: number;
+  y: number;
+  z: number;
+};
+
+function calculateOrbitPosition(
+  angle: number,
+  inclinationDegrees: number,
+): OrbitPosition {
+  const inclinationRadians =
+    (inclinationDegrees * Math.PI) /
+    180;
+
+  const x = Math.cos(angle) * 3;
+
+  const y =
+    0.12 +
+    Math.sin(angle) *
+      4 *
+      Math.cos(inclinationRadians);
+
+  const z =
+    Math.sin(angle) *
+    2.2 *
+    Math.sin(inclinationRadians);
+
+  return { x, y, z };
+}
 
 function createStarTexture() {
   const width = 256;
   const height = 128;
-  const pixelData = new Uint8Array(width * height * 4);
+
+  const pixelData =
+    new Uint8Array(
+      width * height * 4,
+    );
 
   const sunspots = [
-    { x: 0.22, y: 0.38, radius: 0.055 },
-    { x: 0.58, y: 0.63, radius: 0.04 },
-    { x: 0.78, y: 0.43, radius: 0.03 },
+    {
+      x: 0.22,
+      y: 0.38,
+      radius: 0.055,
+    },
+    {
+      x: 0.58,
+      y: 0.63,
+      radius: 0.04,
+    },
+    {
+      x: 0.78,
+      y: 0.43,
+      radius: 0.03,
+    },
   ];
 
-  for (let y = 0; y < height; y += 1) {
-    for (let x = 0; x < width; x += 1) {
+  for (
+    let y = 0;
+    y < height;
+    y += 1
+  ) {
+    for (
+      let x = 0;
+      x < width;
+      x += 1
+    ) {
       const u = x / width;
       const v = y / height;
 
       const flowingBands =
         Math.sin(
-          u * 45 + Math.sin(v * 18) * 2.5,
+          u * 45 +
+            Math.sin(v * 18) * 2.5,
         ) * 0.12;
 
       const smallerCells =
         Math.sin(
-          v * 60 + Math.cos(u * 24) * 3,
+          v * 60 +
+            Math.cos(u * 24) * 3,
         ) * 0.09;
 
       const fineDetail =
-        Math.sin((u + v) * 95) * 0.045;
+        Math.sin(
+          (u + v) * 95,
+        ) * 0.045;
 
       let brightness =
         0.72 +
@@ -74,27 +152,34 @@ function createStarTexture() {
         fineDetail;
 
       for (const spot of sunspots) {
-        let horizontalDistance = Math.abs(
-          u - spot.x,
-        );
+        let horizontalDistance =
+          Math.abs(u - spot.x);
 
-        horizontalDistance = Math.min(
-          horizontalDistance,
-          1 - horizontalDistance,
-        );
+        horizontalDistance =
+          Math.min(
+            horizontalDistance,
+            1 - horizontalDistance,
+          );
 
-        const verticalDistance = v - spot.y;
+        const verticalDistance =
+          v - spot.y;
 
         const distance = Math.sqrt(
-          horizontalDistance * horizontalDistance +
-            verticalDistance * verticalDistance,
+          horizontalDistance *
+            horizontalDistance +
+            verticalDistance *
+              verticalDistance,
         );
 
-        if (distance < spot.radius) {
+        if (
+          distance < spot.radius
+        ) {
           const spotStrength =
-            1 - distance / spot.radius;
+            1 -
+            distance / spot.radius;
 
-          brightness -= spotStrength * 0.48;
+          brightness -=
+            spotStrength * 0.48;
         }
       }
 
@@ -103,21 +188,26 @@ function createStarTexture() {
         Math.min(1, brightness),
       );
 
-      const pixelIndex = (y * width + x) * 4;
+      const pixelIndex =
+        (y * width + x) * 4;
 
-      pixelData[pixelIndex] = Math.round(
-        220 + brightness * 35,
-      );
+      pixelData[pixelIndex] =
+        Math.round(
+          220 + brightness * 35,
+        );
 
-      pixelData[pixelIndex + 1] = Math.round(
-        70 + brightness * 145,
-      );
+      pixelData[pixelIndex + 1] =
+        Math.round(
+          70 + brightness * 145,
+        );
 
-      pixelData[pixelIndex + 2] = Math.round(
-        10 + brightness * 55,
-      );
+      pixelData[pixelIndex + 2] =
+        Math.round(
+          10 + brightness * 55,
+        );
 
-      pixelData[pixelIndex + 3] = 255;
+      pixelData[pixelIndex + 3] =
+        255;
     }
   }
 
@@ -130,7 +220,8 @@ function createStarTexture() {
 
   texture.colorSpace = SRGBColorSpace;
   texture.wrapS = RepeatWrapping;
-  texture.wrapT = ClampToEdgeWrapping;
+  texture.wrapT =
+    ClampToEdgeWrapping;
   texture.magFilter = LinearFilter;
   texture.minFilter = LinearFilter;
   texture.needsUpdate = true;
@@ -143,7 +234,8 @@ function Star({
   isPaused,
   simulationSpeed,
 }: StarProps) {
-  const starGroup = useRef<Group>(null);
+  const starGroup =
+    useRef<Group>(null);
 
   const starTexture = useMemo(() => {
     return createStarTexture();
@@ -156,21 +248,28 @@ function Star({
   }, [starTexture]);
 
   useFrame((_, delta) => {
-    if (!starGroup.current || isPaused) {
+    if (
+      !starGroup.current ||
+      isPaused
+    ) {
       return;
     }
 
     starGroup.current.rotation.y +=
-      delta * 0.06 * simulationSpeed;
+      delta *
+      0.06 *
+      simulationSpeed;
   });
 
   return (
     <group ref={starGroup}>
       <mesh>
-        <sphereGeometry          args={[radius, 96, 96]}
+        <sphereGeometry
+          args={[radius, 96, 96]}
         />
 
-        <meshStandardMaterial          map={starTexture}
+        <meshStandardMaterial
+          map={starTexture}
           emissiveMap={starTexture}
           color="#fff1d0"
           emissive="#d95518"
@@ -179,39 +278,54 @@ function Star({
           metalness={0}
         />
       </mesh>
+
       <mesh scale={1.06}>
-        <sphereGeometry          args={[radius, 64, 64]}
+        <sphereGeometry
+          args={[radius, 64, 64]}
         />
 
-        <meshBasicMaterial          color="#f3a33a"
+        <meshBasicMaterial
+          color="#f3a33a"
           transparent
           opacity={0.14}
           side={BackSide}
-          blending={AdditiveBlending}
+          blending={
+            AdditiveBlending
+          }
           depthWrite={false}
         />
       </mesh>
+
       <mesh scale={1.13}>
-        <sphereGeometry          args={[radius, 64, 64]}
+        <sphereGeometry
+          args={[radius, 64, 64]}
         />
 
-        <meshBasicMaterial          color="#d66b2c"
+        <meshBasicMaterial
+          color="#d66b2c"
           transparent
           opacity={0.055}
           side={BackSide}
-          blending={AdditiveBlending}
+          blending={
+            AdditiveBlending
+          }
           depthWrite={false}
         />
       </mesh>
-      <pointLight        color="#f2a74f"
+
+      <pointLight
+        color="#f2a74f"
         intensity={34}
         distance={18}
         decay={2}
       />
-    </group>  );
+    </group>
+  );
 }
 
-function OrbitPath() {
+function OrbitPath({
+  inclination,
+}: OrbitPathProps) {
   const points = useMemo(() => {
     return Array.from(
       { length: 129 },
@@ -219,18 +333,20 @@ function OrbitPath() {
         const angle =
           (index / 128) * Math.PI * 2;
 
-        const x = Math.cos(angle) * 3;
-        const y = 0.12;
-        const z = Math.sin(angle) * 2.2;
+        const position =
+          calculateOrbitPosition(
+            angle,
+            inclination,
+          );
 
-        return [x, y, z] as [
-          number,
-          number,
-          number,
-        ];
+        return [
+          position.x,
+          position.y,
+          position.z,
+        ] as [number, number, number];
       },
     );
-  }, []);
+  }, [inclination]);
 
   return (
     <Line      points={points}
@@ -244,6 +360,7 @@ function OrbitPath() {
 
 function Planet({
   radius,
+  inclination,
   isPaused,
   simulationSpeed,
   resetSignal,
@@ -265,22 +382,28 @@ function Planet({
     orbitProgress.current = 0;
 
     if (planetGroup.current) {
+      const resetPosition =
+        calculateOrbitPosition(
+          0,
+          inclination,
+        );
+
       planetGroup.current.position.set(
-        3,
-        0.12,
-        0,
+        resetPosition.x,
+        resetPosition.y,
+        resetPosition.z,
       );
     }
 
     orbitUpdateCallback.current?.(0);
-  }, [resetSignal]);
+  }, [inclination, resetSignal]);
 
   useFrame((_, delta) => {
     if (!planetGroup.current) {
       return;
     }
 
-    if (!isPaused) {
+     if (!isPaused) {
       orbitProgress.current =
         (orbitProgress.current +
           delta * 0.45 * simulationSpeed) %
@@ -288,24 +411,27 @@ function Planet({
 
       planetGroup.current.rotation.y +=
         delta * 0.5 * simulationSpeed;
-    }
+     }
 
     const angle = orbitProgress.current;
 
-    const x = Math.cos(angle) * 3;
-    const y = 0.12;
-    const z = Math.sin(angle) * 2.2;
+    const position =
+      calculateOrbitPosition(
+        angle,
+        inclination,
+      );
 
     planetGroup.current.position.set(
-      x,
-      y,
-      z,
+      position.x,
+      position.y,
+      position.z,
     );
 
     const currentTime = performance.now();
 
     if (
-      currentTime - lastUpdateTime.current >=
+      currentTime -
+        lastUpdateTime.current >=
       50
     ) {
       const orbitalPhase =
@@ -315,7 +441,8 @@ function Planet({
         orbitalPhase,
       );
 
-      lastUpdateTime.current = currentTime;
+      lastUpdateTime.current =
+        currentTime;
     }
   });
 
@@ -344,6 +471,7 @@ function Planet({
 export default function OrbitalScene({
   planetRadius = 1,
   starRadius = 1,
+  orbitalInclination = 90,
   isPaused = false,
   simulationSpeed = 1,
   resetSignal = 0,
@@ -354,6 +482,11 @@ export default function OrbitalScene({
 
   const renderedStarRadius =
     1.35 * starRadius;
+
+  const safeInclination = Math.max(
+    0,
+    Math.min(90, orbitalInclination),
+  );
 
   return (
     <div className="h-full min-h-[360px] w-full">
@@ -386,7 +519,8 @@ export default function OrbitalScene({
           }
         />
 
-        <OrbitPath />
+        <OrbitPath          inclination={safeInclination}
+        />
 
         <Star          radius={renderedStarRadius}
           isPaused={isPaused}
@@ -394,6 +528,7 @@ export default function OrbitalScene({
         />
 
         <Planet          radius={renderedPlanetRadius}
+          inclination={safeInclination}
           isPaused={isPaused}
           simulationSpeed={simulationSpeed}
           resetSignal={resetSignal}
