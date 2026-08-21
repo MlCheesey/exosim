@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { LightCurveChart } from "@/components/LightCurveChart";
 import OrbitalScene from "@/components/OrbitalScene";
+import ScienceMath from "@/components/ScienceMath";
 
 export default function Home() {
   const [planetRadius, setPlanetRadius] = useState(1);
@@ -34,45 +35,34 @@ export default function Home() {
   const maximumTransitDepthPercent =
     planetToStarRadiusRatio ** 2 * 100;
 
-  const renderedPlanetRadius =
-    0.38 * planetRadius;
-
-  const renderedStarRadius =
-    1.35 * starRadius;
+  const renderedPlanetRadius = 0.38 * planetRadius;
+  const renderedStarRadius = 1.35 * starRadius;
 
   const inclinationRadians =
     (orbitalInclination * Math.PI) / 180;
 
   const projectedTransitOffset = Math.abs(
-    0.12 +
-      4 * Math.cos(inclinationRadians),
+    0.12 + 4 * Math.cos(inclinationRadians),
   );
 
   const fullTransitLimit = Math.max(
-    renderedStarRadius -
-      renderedPlanetRadius,
+    renderedStarRadius - renderedPlanetRadius,
     0,
   );
 
   const noTransitLimit =
-    renderedStarRadius +
-    renderedPlanetRadius;
+    renderedStarRadius + renderedPlanetRadius;
 
   let transitVisibility = 1;
 
-  if (
-    projectedTransitOffset >= noTransitLimit
-  ) {
+  if (projectedTransitOffset >= noTransitLimit) {
     transitVisibility = 0;
   } else if (
-    projectedTransitOffset >
-    fullTransitLimit
+    projectedTransitOffset > fullTransitLimit
   ) {
     transitVisibility =
-      (noTransitLimit -
-        projectedTransitOffset) /
-      (noTransitLimit -
-        fullTransitLimit);
+      (noTransitLimit - projectedTransitOffset) /
+      (noTransitLimit - fullTransitLimit);
   }
 
   const effectiveTransitDepthPercent =
@@ -105,49 +95,34 @@ export default function Home() {
           <div className="flex size-10 items-center justify-center rounded-md border border-amber-500/25 bg-amber-500/10 text-amber-300">
             <Orbit size={22} />
           </div>
-
           <div>
             <h1 className="text-xl font-semibold text-stone-50">
               ExoSim
             </h1>
-
             <p className="text-xs uppercase tracking-[0.24em] text-stone-500">
               Exoplanet Transit Lab
-            </p>
-          </div>
-        </div>
-
+            </p>          </div>        </div>
         <nav className="hidden items-center gap-6 text-sm text-stone-400 md:flex">
-          <a
-            href="#lab"
+          <a            href="#lab"
             className="transition hover:text-amber-300"
           >
             Lab
           </a>
-
-          <a
-            href="#library"
+          <a            href="#library"
             className="transition hover:text-amber-300"
           >
             NASA Library
           </a>
-
-          <a
-            href="#science"
+          <a            href="#science"
             className="transition hover:text-amber-300"
           >
             Science Math
-          </a>
-        </nav>
-
+          </a>        </nav>
         <div className="flex items-center gap-2 border-l-2 border-amber-400/70 pl-3 font-mono text-[10px] uppercase tracking-[0.18em] text-amber-200">
           <span className="size-1.5 bg-amber-300" />
           Telemetry active
-        </div>
-      </header>
-
-      <section
-        id="lab"
+        </div>      </header>
+      <section        id="lab"
         className="mx-auto mt-6 grid max-w-[1500px] gap-5 lg:grid-cols-[minmax(0,1fr)_330px]"
       >
         <div className="rounded-lg border border-[#2A2620] bg-[#11100E]/90 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
@@ -156,21 +131,15 @@ export default function Home() {
               <h2 className="text-lg font-semibold text-stone-50">
                 Orbital View
               </h2>
-
               <p className="text-sm text-stone-500">
                 Live 3D view of the star and orbiting exoplanet
-              </p>
-            </div>
-
-            <Orbit
-              className="text-amber-300"
+              </p>            </div>
+            <Orbit              className="text-amber-300"
               size={22}
             />
           </div>
-
           <div className="relative h-[440px] overflow-hidden rounded-lg border border-[#2A2620] bg-[#050505] sm:h-[520px] lg:h-auto lg:aspect-[16/10]">
-            <OrbitalScene
-              planetRadius={planetRadius}
+            <OrbitalScene              planetRadius={planetRadius}
               starRadius={starRadius}
               orbitalInclination={
                 orbitalInclination
@@ -183,8 +152,7 @@ export default function Home() {
 
             <div className="absolute right-3 top-3 z-10 max-w-[calc(100%-1.5rem)] border border-[#44392C] bg-[#0A0907]/92 shadow-[0_12px_35px_rgba(0,0,0,0.45)] backdrop-blur-md sm:right-4 sm:top-4">
               <div className="flex items-stretch">
-                <button
-                  type="button"
+                <button                  type="button"
                   onClick={() => {
                     setIsPaused(
                       (current) => !current,
@@ -200,9 +168,7 @@ export default function Home() {
 
                   {isPaused ? "Resume" : "Pause"}
                 </button>
-
-                <button
-                  type="button"
+                <button                  type="button"
                   onClick={handleReset}
                   aria-label="Reset orbit"
                   title="Reset orbit"
@@ -210,20 +176,15 @@ export default function Home() {
                 >
                   <RotateCcw size={14} />
                 </button>
-
                 <div className="w-44 px-3 py-1.5">
                   <div className="mb-0.5 flex items-center justify-between">
                     <span className="font-mono text-[8px] uppercase tracking-[0.14em] text-stone-600">
                       Speed
                     </span>
-
                     <span className="font-mono text-[10px] text-amber-200">
-                      {simulationSpeed.toFixed(1)}×
-                    </span>
-                  </div>
-
-                  <input
-                    type="range"
+                      {simulationSpeed.toFixed(1)}
+                    </span>                  </div>
+                  <input                    type="range"
                     min="0.2"
                     max="3"
                     step="0.1"
@@ -238,78 +199,50 @@ export default function Home() {
                   />
 
                   <div className="mt-0.5 flex justify-between font-mono text-[8px] text-stone-600">
-                    <span>0.2×</span>
-                    <span>1.6×</span>
-                    <span>3.0×</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
+                    <span>0.2</span>                    <span>1.6</span>                    <span>3.0</span>                  </div>                </div>              </div>            </div>
             <div className="pointer-events-none absolute bottom-4 left-4 border-l-2 border-amber-400/60 bg-[#0B0907]/75 px-3 py-2 backdrop-blur-sm">
               <div className="flex items-center gap-5">
                 <div>
                   <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">
                     Target
                   </p>
-
                   <p className="mt-1 font-mono text-xs text-amber-200">
                     EXO-001
-                  </p>
-                </div>
-
+                  </p>                </div>
                 <div>
                   <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">
                     Orbital phase
                   </p>
-
                   <p className="mt-1 font-mono text-xs text-stone-300">
                     {orbitalPhase.toFixed(3)}
-                  </p>
-                </div>
-
+                  </p>                </div>
                 <div>
                   <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">
                     Inclination
                   </p>
-
                   <p className="mt-1 font-mono text-xs text-stone-300">
-                    {orbitalInclination.toFixed(0)}°
-                  </p>
-                </div>
-
+                    {orbitalInclination.toFixed(0)}
+                  </p>                </div>
                 <div>
                   <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">
                     State
                   </p>
-
                   <p className="mt-1 font-mono text-xs text-stone-300">
                     {isPaused ? "PAUSED" : "RUNNING"}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
+                  </p>                </div>              </div>            </div>          </div>        </div>
         <aside className="rounded-lg border border-[#2A2620] bg-[#11100E]/90 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
           <div className="mb-5 flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-stone-50">
                 Mission Controls
               </h2>
-
               <p className="text-sm text-stone-500">
                 Simulation parameters
-              </p>
-            </div>
-
-            <Sigma
-              className="text-rose-300"
+              </p>            </div>
+            <Sigma              className="text-rose-300"
               size={22}
             />
           </div>
-
           <div className="space-y-4">
             <div className="rounded-md border border-[#3A3024] bg-[#090807] p-4">
               <div className="flex items-start justify-between gap-4">
@@ -317,19 +250,13 @@ export default function Home() {
                   <p className="text-sm text-stone-500">
                     Planet Radius
                   </p>
-
                   <p className="mt-1 font-mono text-2xl text-amber-200">
-                    {planetRadius.toFixed(1)} R⊕
-                  </p>
-                </div>
-
+                    {planetRadius.toFixed(1)} R
+                  </p>                </div>
                 <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-600">
                   Input 01
-                </span>
-              </div>
-
-              <input
-                type="range"
+                </span>              </div>
+              <input                type="range"
                 min="0.5"
                 max="2"
                 step="0.1"
@@ -344,30 +271,20 @@ export default function Home() {
               />
 
               <div className="mt-2 flex justify-between font-mono text-[10px] text-stone-600">
-                <span>0.5 R⊕</span>
-                <span>2.0 R⊕</span>
-              </div>
-            </div>
-
+                <span>0.5 R</span>                <span>2.0 R</span>              </div>            </div>
             <div className="rounded-md border border-[#3A3024] bg-[#090807] p-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm text-stone-500">
                     Star Radius
                   </p>
-
                   <p className="mt-1 font-mono text-2xl text-stone-200">
-                    {starRadius.toFixed(1)} R☉
-                  </p>
-                </div>
-
+                    {starRadius.toFixed(1)} R
+                  </p>                </div>
                 <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-600">
                   Input 02
-                </span>
-              </div>
-
-              <input
-                type="range"
+                </span>              </div>
+              <input                type="range"
                 min="0.5"
                 max="1.5"
                 step="0.1"
@@ -382,30 +299,20 @@ export default function Home() {
               />
 
               <div className="mt-2 flex justify-between font-mono text-[10px] text-stone-600">
-                <span>0.5 R☉</span>
-                <span>1.5 R☉</span>
-              </div>
-            </div>
-
+                <span>0.5 R</span>                <span>1.5 R</span>              </div>            </div>
             <div className="rounded-md border border-[#3A3024] bg-[#090807] p-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm text-stone-500">
                     Orbit Inclination
                   </p>
-
                   <p className="mt-1 font-mono text-2xl text-amber-200">
-                    {orbitalInclination.toFixed(0)}°
-                  </p>
-                </div>
-
+                    {orbitalInclination.toFixed(0)}
+                  </p>                </div>
                 <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-600">
                   Input 03
-                </span>
-              </div>
-
-              <input
-                type="range"
+                </span>              </div>
+              <input                type="range"
                 min="60"
                 max="90"
                 step="1"
@@ -420,35 +327,23 @@ export default function Home() {
               />
 
               <div className="mt-2 flex justify-between font-mono text-[10px] text-stone-600">
-                <span>60° tilted</span>
-                <span>75°</span>
-                <span>90° edge-on</span>
-              </div>
-
+                <span>60 tilted</span>                <span>75</span>                <span>90 edge-on</span>              </div>
               <p className="mt-3 border-t border-[#2A2620] pt-3 text-xs leading-relaxed text-stone-600">
                 Lower angles move the planet above or below the star
-              </p>
-            </div>
-
-            <div className="rounded-md border border-[#3A3024] bg-[#090807] p-4">
+              </p>            </div>
+            <div className="rounded-md border border-[#3A 3024] bg-[#090807] p-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm text-stone-500">
                     Observation Noise
                   </p>
-
                   <p className="mt-1 font-mono text-2xl text-stone-200">
                     {noisePpm.toFixed(0)} ppm
-                  </p>
-                </div>
-
+                  </p>                </div>
                 <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-600">
                   Input 04
-                </span>
-              </div>
-
-              <input
-                type="range"
+                </span>              </div>
+              <input                type="range"
                 min="0"
                 max="300"
                 step="10"
@@ -463,73 +358,47 @@ export default function Home() {
               />
 
               <div className="mt-2 flex justify-between font-mono text-[10px] text-stone-600">
-                <span>0 ppm</span>
-                <span>150 ppm</span>
-                <span>300 ppm</span>
-              </div>
-            </div>
-
+                <span>0 ppm</span>                <span>150 ppm</span>                <span>300 ppm</span>              </div>            </div>
             <div className="rounded-md border border-rose-500/20 bg-[#090807] p-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm text-stone-500">
                     Transit Signal
                   </p>
-
                   <p className="mt-1 font-mono text-2xl text-rose-300">
-                    {effectiveTransitDepthPercent.toFixed(
-                      4,
-                    )}
-                    %
-                  </p>
-                </div>
-
-                <div
-                  className={
+                    {effectiveTransitDepthPercent.toFixed(4)}%
+                  </p>                </div>
+                <div                  className={
                     transitVisibility === 0
                       ? "flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500"
                       : transitVisibility < 0.999
                         ? "flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.16em] text-amber-200"
                         : "flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.16em] text-rose-300"
-                  }
+                }
                 >
-                  <span
-                    className={
+                  <span                    className={
                       transitVisibility === 0
                         ? "size-1.5 bg-stone-600"
                         : transitVisibility < 0.999
                           ? "size-1.5 bg-amber-300"
                           : "size-1.5 bg-rose-300"
-                    }
+                  }
                   />
 
                   {transitGeometry}
-                </div>
-              </div>
-
+                </div>              </div>
               <div className="mt-4 border-t border-[#2A2620] pt-3">
                 <p className="font-mono text-xs text-stone-500">
-                  Maximum depth:{" "}
-                  {maximumTransitDepthPercent.toFixed(
-                    4,
-                  )}
-                  %
+                  Maximum signal {" "}
+                  {maximumTransitDepthPercent.toFixed(4)}%
                 </p>
-
                 <p className="mt-1 text-xs text-stone-600">
                   Visible signal after orbital alignment
-                </p>
-              </div>
-            </div>
-          </div>
-        </aside>
-      </section>
-
+                </p>              </div>            </div>          </div>        </aside>      </section>
       <section className="mx-auto mt-5 max-w-[1500px] rounded-lg border border-[#2A2620] bg-[#11100E]/90 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Database
-              className="text-rose-300"
+            <Database              className="text-rose-300"
               size={20}
             />
 
@@ -537,29 +406,36 @@ export default function Home() {
               <h2 className="text-lg font-semibold text-stone-50">
                 Live Light-Curve
               </h2>
-
               <p className="text-sm text-stone-500">
                 Theoretical model and simulated telescope observation
-              </p>
-            </div>
-          </div>
-
+              </p>            </div>          </div>
           <div className="flex items-center gap-2 border-l-2 border-rose-400/70 pl-3 font-mono text-[10px] uppercase tracking-[0.18em] text-rose-300">
             <span className="size-1.5 animate-pulse bg-rose-300" />
             Photometry / live
-          </div>
-        </div>
-
+          </div>        </div>
         <div className="h-[360px] rounded-md border border-[#2A2620] bg-[#090807] p-4 sm:h-[400px] sm:p-5">
-          <LightCurveChart
-            orbitalPhase={orbitalPhase}
+          <LightCurveChart            orbitalPhase={orbitalPhase}
             transitDepthPercent={
               effectiveTransitDepthPercent
             }
             noisePpm={noisePpm}
           />
-        </div>
-      </section>
-    </main>
-  );
+        </div>      </section>
+      <ScienceMath        planetRadius={planetRadius}
+        starRadius={starRadius}
+        orbitalInclination={
+          orbitalInclination
+        }
+        radiusRatio={
+          planetToStarRadiusRatio
+        }
+        maximumTransitDepthPercent={
+          maximumTransitDepthPercent
+        }
+        effectiveTransitDepthPercent={
+          effectiveTransitDepthPercent
+        }
+        transitGeometry={transitGeometry}
+      />
+    </main>  );
 }
