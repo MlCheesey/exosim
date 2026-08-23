@@ -182,6 +182,7 @@ export default function Home() {
             <OrbitalScene
               planetRadius={planetRadius}
               starRadius={starRadius}
+                planetName={activePlanetName}
               orbitalInclination={
                 orbitalInclination
               }

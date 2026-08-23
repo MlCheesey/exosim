@@ -24,10 +24,15 @@ import {
   SRGBColorSpace,
 } from "three";
 import type { Group } from "three";
+import {
+  getPlanetVisualProfile,
+  type PlanetVisualProfile,
+} from "@/data/planetVisualProfiles";
 
 type OrbitalSceneProps = {
   planetRadius?: number;
   starRadius?: number;
+  planetName?: string;
   orbitalInclination?: number;
   isPaused?: boolean;
   simulationSpeed?: number;
@@ -49,6 +54,7 @@ type OrbitPathProps = {
 
 type PlanetProps = {
   radius: number;
+  planetName?: string;
   inclination: number;
   isPaused: boolean;
   simulationSpeed: number;
@@ -255,7 +261,9 @@ function createStarTexture() {
   return texture;
 }
 
-function createPlanetTextures(): PlanetSurfaceTextures {
+function createPlanetTextures(
+  profile: PlanetVisualProfile,
+): PlanetSurfaceTextures {
   const width = 512;
   const height = 256;
 
@@ -391,7 +399,8 @@ function createPlanetTextures(): PlanetSurfaceTextures {
             (1 -
               normalizedDistance /
                 0.72) *
-            0.32;
+            0.32 *
+            profile.craterStrength;
         } else if (
           normalizedDistance < 1
         ) {
@@ -403,7 +412,9 @@ function createPlanetTextures(): PlanetSurfaceTextures {
           terrain +=
             Math.sin(
               rimPosition * Math.PI,
-            ) * 0.19;
+            ) *
+            0.19 *
+            profile.craterStrength;
         }
       }
 
@@ -416,37 +427,54 @@ function createPlanetTextures(): PlanetSurfaceTextures {
       const normalizedTerrain =
         (terrain + 0.75) / 1.5;
 
-      const rustVariation =
+      const colorMix = clamp(
+        0.5 +
+          (normalizedTerrain - 0.5) *
+            profile.terrainContrast,
+        0,
+        1,
+      );
+
+      const surfaceVariation =
         Math.sin(
           u * 31 +
             Math.sin(v * 14),
-        ) * 8;
+        ) * 6;
 
       const red = clamp(
-        48 +
-          normalizedTerrain * 100 +
-          rustVariation,
+        profile.lowlandColor[0] +
+          (profile.highlandColor[0] -
+            profile.lowlandColor[0]) *
+            colorMix +
+          surfaceVariation,
         0,
         255,
       );
 
       const green = clamp(
-        29 +
-          normalizedTerrain * 58 +
-          rustVariation * 0.35,
+        profile.lowlandColor[1] +
+          (profile.highlandColor[1] -
+            profile.lowlandColor[1]) *
+            colorMix +
+          surfaceVariation * 0.35,
         0,
         255,
       );
 
       const blue = clamp(
-        25 +
-          normalizedTerrain * 36,
+        profile.lowlandColor[2] +
+          (profile.highlandColor[2] -
+            profile.lowlandColor[2]) *
+            colorMix,
         0,
         255,
       );
 
       const bumpValue = clamp(
-        126 + terrain * 105,
+        126 +
+          terrain *
+            105 *
+            profile.terrainContrast,
         0,
         255,
       );
@@ -637,6 +665,7 @@ function OrbitPath({
 
 function Planet({
   radius,
+  planetName,
   inclination,
   isPaused,
   simulationSpeed,
@@ -652,9 +681,17 @@ function Planet({
   const orbitUpdateCallback =
     useRef(onOrbitUpdate);
 
+  const visualProfile = useMemo(() => {
+    return getPlanetVisualProfile(
+      planetName,
+    );
+  }, [planetName]);
+
   const planetTextures = useMemo(() => {
-    return createPlanetTextures();
-  }, []);
+    return createPlanetTextures(
+      visualProfile,
+    );
+  }, [visualProfile]);
 
   useEffect(() => {
     return () => {
@@ -758,8 +795,10 @@ function Planet({
           bumpMap={
             planetTextures.bumpTexture
           }
-          bumpScale={0.045}
-          color="#d7a083"
+          bumpScale={
+            visualProfile.bumpScale
+          }
+          color="#ffffff"
           roughness={0.96}
           metalness={0.01}
         />
@@ -771,9 +810,13 @@ function Planet({
         />
 
         <meshBasicMaterial
-          color="#d98267"
+          color={
+            visualProfile.atmosphereColor
+          }
           transparent
-          opacity={0.11}
+          opacity={
+            visualProfile.atmosphereOpacity
+          }
           side={BackSide}
           blending={
             AdditiveBlending
@@ -788,9 +831,14 @@ function Planet({
         />
 
         <meshBasicMaterial
-          color="#b85e48"
+          color={
+            visualProfile.atmosphereColor
+          }
           transparent
-          opacity={0.035}
+          opacity={
+            visualProfile.atmosphereOpacity *
+            0.3
+          }
           side={BackSide}
           blending={
             AdditiveBlending
@@ -805,6 +853,7 @@ function Planet({
 export default function OrbitalScene({
   planetRadius = 1,
   starRadius = 1,
+  planetName,
   orbitalInclination = 90,
   isPaused = false,
   simulationSpeed = 1,
@@ -874,6 +923,7 @@ export default function OrbitalScene({
 
         <Planet
           radius={renderedPlanetRadius}
+          planetName={planetName}
           inclination={safeInclination}
           isPaused={isPaused}
           simulationSpeed={
