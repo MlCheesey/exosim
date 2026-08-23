@@ -64,6 +64,22 @@ type OrbitPosition = {
   z: number;
 };
 
+type PlanetSurfaceTextures = {
+  colorTexture: DataTexture;
+  bumpTexture: DataTexture;
+};
+
+function clamp(
+  value: number,
+  minimum: number,
+  maximum: number,
+) {
+  return Math.max(
+    minimum,
+    Math.min(maximum, value),
+  );
+}
+
 function calculateOrbitPosition(
   angle: number,
   inclinationDegrees: number,
@@ -86,6 +102,21 @@ function calculateOrbitPosition(
     Math.sin(inclinationRadians);
 
   return { x, y, z };
+}
+
+function prepareTexture(
+  texture: DataTexture,
+  usesColorSpace: boolean,
+) {
+  if (usesColorSpace) {
+    texture.colorSpace = SRGBColorSpace;
+  }
+
+  texture.wrapS = RepeatWrapping;
+  texture.wrapT = ClampToEdgeWrapping;
+  texture.magFilter = LinearFilter;
+  texture.minFilter = LinearFilter;
+  texture.needsUpdate = true;
 }
 
 function createStarTexture() {
@@ -183,9 +214,10 @@ function createStarTexture() {
         }
       }
 
-      brightness = Math.max(
+      brightness = clamp(
+        brightness,
         0.16,
-        Math.min(1, brightness),
+        1,
       );
 
       const pixelIndex =
@@ -218,15 +250,257 @@ function createStarTexture() {
     RGBAFormat,
   );
 
-  texture.colorSpace = SRGBColorSpace;
-  texture.wrapS = RepeatWrapping;
-  texture.wrapT =
-    ClampToEdgeWrapping;
-  texture.magFilter = LinearFilter;
-  texture.minFilter = LinearFilter;
-  texture.needsUpdate = true;
+  prepareTexture(texture, true);
 
   return texture;
+}
+
+function createPlanetTextures(): PlanetSurfaceTextures {
+  const width = 512;
+  const height = 256;
+
+  const colorData =
+    new Uint8Array(
+      width * height * 4,
+    );
+
+  const bumpData =
+    new Uint8Array(
+      width * height * 4,
+    );
+
+  const craters = [
+    {
+      x: 0.12,
+      y: 0.31,
+      radius: 0.047,
+    },
+    {
+      x: 0.21,
+      y: 0.67,
+      radius: 0.029,
+    },
+    {
+      x: 0.34,
+      y: 0.45,
+      radius: 0.061,
+    },
+    {
+      x: 0.46,
+      y: 0.72,
+      radius: 0.036,
+    },
+    {
+      x: 0.55,
+      y: 0.28,
+      radius: 0.024,
+    },
+    {
+      x: 0.64,
+      y: 0.53,
+      radius: 0.052,
+    },
+    {
+      x: 0.73,
+      y: 0.76,
+      radius: 0.032,
+    },
+    {
+      x: 0.82,
+      y: 0.39,
+      radius: 0.041,
+    },
+    {
+      x: 0.91,
+      y: 0.61,
+      radius: 0.022,
+    },
+  ];
+
+  for (
+    let y = 0;
+    y < height;
+    y += 1
+  ) {
+    for (
+      let x = 0;
+      x < width;
+      x += 1
+    ) {
+      const u = x / width;
+      const v = y / height;
+
+      const broadTerrain =
+        Math.sin(
+          u * 15 +
+            Math.sin(v * 9) * 2.8,
+        ) * 0.28;
+
+      const brokenPlateaus =
+        Math.sin(
+          v * 23 -
+            Math.cos(u * 17) * 3.2,
+        ) * 0.2;
+
+      const windingRidges =
+        Math.sin(
+          (u + v) * 39 +
+            Math.sin(u * 8),
+        ) * 0.11;
+
+      const fineRock =
+        Math.sin(u * 113) *
+        Math.sin(v * 97) *
+        0.055;
+
+      const latitude =
+        Math.abs(v - 0.5) * 2;
+
+      let terrain =
+        broadTerrain +
+        brokenPlateaus +
+        windingRidges +
+        fineRock -
+        latitude * 0.05;
+
+      for (const crater of craters) {
+        let horizontalDistance =
+          Math.abs(u - crater.x);
+
+        horizontalDistance =
+          Math.min(
+            horizontalDistance,
+            1 - horizontalDistance,
+          );
+
+        const verticalDistance =
+          v - crater.y;
+
+        const distance = Math.sqrt(
+          horizontalDistance *
+            horizontalDistance +
+            verticalDistance *
+              verticalDistance,
+        );
+
+        const normalizedDistance =
+          distance / crater.radius;
+
+        if (normalizedDistance < 0.72) {
+          terrain -=
+            (1 -
+              normalizedDistance /
+                0.72) *
+            0.32;
+        } else if (
+          normalizedDistance < 1
+        ) {
+          const rimPosition =
+            (normalizedDistance -
+              0.72) /
+            0.28;
+
+          terrain +=
+            Math.sin(
+              rimPosition * Math.PI,
+            ) * 0.19;
+        }
+      }
+
+      terrain = clamp(
+        terrain,
+        -0.75,
+        0.75,
+      );
+
+      const normalizedTerrain =
+        (terrain + 0.75) / 1.5;
+
+      const rustVariation =
+        Math.sin(
+          u * 31 +
+            Math.sin(v * 14),
+        ) * 8;
+
+      const red = clamp(
+        48 +
+          normalizedTerrain * 100 +
+          rustVariation,
+        0,
+        255,
+      );
+
+      const green = clamp(
+        29 +
+          normalizedTerrain * 58 +
+          rustVariation * 0.35,
+        0,
+        255,
+      );
+
+      const blue = clamp(
+        25 +
+          normalizedTerrain * 36,
+        0,
+        255,
+      );
+
+      const bumpValue = clamp(
+        126 + terrain * 105,
+        0,
+        255,
+      );
+
+      const pixelIndex =
+        (y * width + x) * 4;
+
+      colorData[pixelIndex] =
+        Math.round(red);
+
+      colorData[pixelIndex + 1] =
+        Math.round(green);
+
+      colorData[pixelIndex + 2] =
+        Math.round(blue);
+
+      colorData[pixelIndex + 3] =
+        255;
+
+      bumpData[pixelIndex] =
+        Math.round(bumpValue);
+
+      bumpData[pixelIndex + 1] =
+        Math.round(bumpValue);
+
+      bumpData[pixelIndex + 2] =
+        Math.round(bumpValue);
+
+      bumpData[pixelIndex + 3] =
+        255;
+    }
+  }
+
+  const colorTexture = new DataTexture(
+    colorData,
+    width,
+    height,
+    RGBAFormat,
+  );
+
+  const bumpTexture = new DataTexture(
+    bumpData,
+    width,
+    height,
+    RGBAFormat,
+  );
+
+  prepareTexture(colorTexture, true);
+  prepareTexture(bumpTexture, false);
+
+  return {
+    colorTexture,
+    bumpTexture,
+  };
 }
 
 function Star({
@@ -331,7 +605,9 @@ function OrbitPath({
       { length: 129 },
       (_, index) => {
         const angle =
-          (index / 128) * Math.PI * 2;
+          (index / 128) *
+          Math.PI *
+          2;
 
         const position =
           calculateOrbitPosition(
@@ -349,7 +625,8 @@ function OrbitPath({
   }, [inclination]);
 
   return (
-    <Line      points={points}
+    <Line
+      points={points}
       color="#d49a46"
       lineWidth={2}
       transparent
@@ -366,12 +643,25 @@ function Planet({
   resetSignal,
   onOrbitUpdate,
 }: PlanetProps) {
-  const planetGroup = useRef<Group>(null);
+  const planetGroup =
+    useRef<Group>(null);
+
   const orbitProgress = useRef(0);
   const lastUpdateTime = useRef(0);
 
   const orbitUpdateCallback =
     useRef(onOrbitUpdate);
+
+  const planetTextures = useMemo(() => {
+    return createPlanetTextures();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      planetTextures.colorTexture.dispose();
+      planetTextures.bumpTexture.dispose();
+    };
+  }, [planetTextures]);
 
   useEffect(() => {
     orbitUpdateCallback.current =
@@ -403,15 +693,19 @@ function Planet({
       return;
     }
 
-     if (!isPaused) {
+    if (!isPaused) {
       orbitProgress.current =
         (orbitProgress.current +
-          delta * 0.45 * simulationSpeed) %
+          delta *
+            0.45 *
+            simulationSpeed) %
         (Math.PI * 2);
 
       planetGroup.current.rotation.y +=
-        delta * 0.5 * simulationSpeed;
-     }
+        delta *
+        0.34 *
+        simulationSpeed;
+    }
 
     const angle = orbitProgress.current;
 
@@ -427,7 +721,8 @@ function Planet({
       position.z,
     );
 
-    const currentTime = performance.now();
+    const currentTime =
+      performance.now();
 
     if (
       currentTime -
@@ -447,25 +742,64 @@ function Planet({
   });
 
   return (
-    <group ref={planetGroup}>
+    <group
+      ref={planetGroup}
+      rotation={[0, 0, 0.18]}
+    >
       <mesh>
-        <sphereGeometry          args={[radius, 48, 48]}
+        <sphereGeometry
+          args={[radius, 96, 96]}
         />
 
-        <meshStandardMaterial          color="#703d32"
-          roughness={0.9}
-          metalness={0.05}
+        <meshStandardMaterial
+          map={
+            planetTextures.colorTexture
+          }
+          bumpMap={
+            planetTextures.bumpTexture
+          }
+          bumpScale={0.045}
+          color="#d7a083"
+          roughness={0.96}
+          metalness={0.01}
         />
       </mesh>
-      <mesh scale={1.04}>
-        <sphereGeometry          args={[radius, 48, 48]}
+
+      <mesh scale={1.025}>
+        <sphereGeometry
+          args={[radius, 64, 64]}
         />
 
-        <meshBasicMaterial          color="#b46146"
+        <meshBasicMaterial
+          color="#d98267"
           transparent
-          opacity={0.08}
+          opacity={0.11}
+          side={BackSide}
+          blending={
+            AdditiveBlending
+          }
+          depthWrite={false}
         />
-      </mesh>    </group>  );
+      </mesh>
+
+      <mesh scale={1.055}>
+        <sphereGeometry
+          args={[radius, 64, 64]}
+        />
+
+        <meshBasicMaterial
+          color="#b85e48"
+          transparent
+          opacity={0.035}
+          side={BackSide}
+          blending={
+            AdditiveBlending
+          }
+          depthWrite={false}
+        />
+      </mesh>
+    </group>
+  );
 }
 
 export default function OrbitalScene({
@@ -485,28 +819,34 @@ export default function OrbitalScene({
 
   const safeInclination = Math.max(
     0,
-    Math.min(90, orbitalInclination),
+    Math.min(
+      90,
+      orbitalInclination,
+    ),
   );
 
   return (
     <div className="h-full min-h-[360px] w-full">
-      <Canvas        camera={{
+      <Canvas
+        camera={{
           position: [0, 0, 7],
           fov: 45,
-      }}
+        }}
         gl={{
           antialias: true,
           alpha: true,
         }}
       >
-        <ambientLight intensity={0.1} />
+        <ambientLight intensity={0.055} />
 
-        <directionalLight          position={[4, 3, 6]}
+        <directionalLight
+          position={[4, 3, 6]}
           color="#ffd6a0"
-          intensity={1.2}
+          intensity={0.38}
         />
 
-        <Stars          radius={45}
+        <Stars
+          radius={45}
           depth={25}
           count={900}
           factor={2}
@@ -515,24 +855,34 @@ export default function OrbitalScene({
           speed={
             isPaused
               ? 0
-              : 0.15 * simulationSpeed
+              : 0.15 *
+                simulationSpeed
           }
         />
 
-        <OrbitPath          inclination={safeInclination}
+        <OrbitPath
+          inclination={safeInclination}
         />
 
-        <Star          radius={renderedStarRadius}
+        <Star
+          radius={renderedStarRadius}
           isPaused={isPaused}
-          simulationSpeed={simulationSpeed}
+          simulationSpeed={
+            simulationSpeed
+          }
         />
 
-        <Planet          radius={renderedPlanetRadius}
+        <Planet
+          radius={renderedPlanetRadius}
           inclination={safeInclination}
           isPaused={isPaused}
-          simulationSpeed={simulationSpeed}
+          simulationSpeed={
+            simulationSpeed
+          }
           resetSignal={resetSignal}
           onOrbitUpdate={onOrbitUpdate}
         />
-      </Canvas>    </div>  );
+      </Canvas>
+    </div>
+  );
 }
