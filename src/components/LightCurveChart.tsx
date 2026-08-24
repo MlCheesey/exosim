@@ -372,52 +372,63 @@ export function LightCurveChart({
 
   return (
     <div className="flex h-full w-full flex-col">
-      <div className="mb-3 flex flex-wrap items-start justify-between gap-4">
-        <div className="flex items-start gap-8">
-          <div>
-            <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">
-              Observed flux
-            </p>
-            <p className="mt-1 font-mono text-xl text-stone-200">
-              {currentObservedBrightness.toFixed(
-                4,
-              )}
-              %
-            </p>          </div>
-          <div>
-            <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">
-              Noise floor
-            </p>
-            <p className="mt-1 font-mono text-sm text-stone-400">
-              {noisePpm.toFixed(0)} ppm
-            </p>          </div>        </div>
-        <div          className={
-            isTransiting
-              ? "border-l-2 border-rose-400 pl-3"
-              : "border-l-2 border-amber-400/60 pl-3"
-        }
-        >
-          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-600">
-            Detection state
-          </p>
-          <div className="mt-1 flex items-center gap-2">
-            <span              className={
-                isTransiting
-                  ? "size-1.5 bg-rose-300"
-                  : "size-1.5 bg-amber-300"
-            }
-            />
+<div className="mb-3 grid grid-cols-2 gap-x-4 gap-y-3 sm:flex sm:items-start sm:justify-between sm:gap-4">
+  <div className="col-span-2 grid grid-cols-2 gap-4 sm:flex sm:items-start sm:gap-8">
+    <div className="min-w-0">
+      <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">
+        Observed flux
+      </p>
 
-            <p              className={
-                isTransiting
-                  ? "font-mono text-[10px] uppercase tracking-[0.14em] text-rose-300"
-                  : "font-mono text-[10px] uppercase tracking-[0.14em] text-amber-200"
-            }
-            >
-              {isTransiting
-                ? "Transit detected"
-                : "Baseline stable"}
-            </p>          </div>        </div>      </div>
+      <p className="mt-1 font-mono text-xl text-stone-200">
+        {currentObservedBrightness.toFixed(4)}%
+      </p>
+    </div>
+
+    <div className="min-w-0">
+      <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">
+        Noise floor
+      </p>
+
+      <p className="mt-1 font-mono text-sm text-stone-400">
+        {noisePpm.toFixed(0)} ppm
+      </p>
+    </div>
+  </div>
+
+  <div
+    className={`col-span-2 min-h-[38px] min-w-[150px] justify-self-start border-l-2 pl-3 sm:col-span-1 sm:justify-self-auto ${
+      isTransiting
+        ? "border-rose-400"
+        : "border-amber-400/60"
+    }`}
+  >
+    <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-600">
+      Detection state
+    </p>
+
+    <div className="mt-1 flex items-center gap-2">
+      <span
+        className={
+          isTransiting
+            ? "size-1.5 shrink-0 bg-rose-300"
+            : "size-1.5 shrink-0 bg-amber-300"
+        }
+      />
+
+      <p
+        className={
+          isTransiting
+            ? "whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.14em] text-rose-300"
+            : "whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.14em] text-amber-200"
+        }
+      >
+        {isTransiting
+          ? "Transit detected"
+          : "Baseline stable"}
+      </p>
+    </div>
+  </div>
+</div>
       <div className="min-h-0 flex-1">
         <Line          data={chartData}
           options={chartOptions}

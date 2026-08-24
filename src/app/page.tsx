@@ -102,19 +102,19 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-[#070707] px-4 py-5 text-stone-100 sm:px-6">
-      <header className="mx-auto flex max-w-[1500px] items-center justify-between gap-4 rounded-lg border border-[#2A2620] bg-[#11100E]/90 px-5 py-4 shadow-[0_18px_60px_rgba(0,0,0,0.35)]">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-md border border-amber-500/25 bg-amber-500/10 text-amber-300">
-            <Orbit size={22} />
+    <main className="min-h-screen overflow-x-hidden bg-[#070707] px-3 py-3 text-stone-100 sm:px-6 sm:py-5">
+      <header className="mx-auto flex w-full max-w-[1500px] flex-wrap items-center justify-between gap-3 rounded-lg border border-[#2A2620] bg-[#11100E]/90 px-4 py-3 shadow-[0_18px_60px_rgba(0,0,0,0.35)] sm:px-5 sm:py-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-md border border-amber-500/25 bg-amber-500/10 text-amber-300 sm:size-10">
+            <Orbit size={21} />
           </div>
 
-          <div>
-            <h1 className="text-xl font-semibold text-stone-50">
+          <div className="min-w-0">
+            <h1 className="text-lg font-semibold text-stone-50 sm:text-xl">
               ExoSim
             </h1>
 
-            <p className="text-xs uppercase tracking-[0.24em] text-stone-500">
+            <p className="text-[9px] uppercase tracking-[0.2em] text-stone-500 sm:text-xs sm:tracking-[0.24em]">
               Exoplanet Transit Lab
             </p>
           </div>
@@ -143,35 +143,64 @@ export default function Home() {
           </a>
         </nav>
 
-        <div className="flex items-center gap-2 border-l-2 border-amber-400/70 pl-3 font-mono text-[10px] uppercase tracking-[0.18em] text-amber-200">
+        <div className="flex shrink-0 items-center gap-2 border-l-2 border-amber-400/70 pl-3 font-mono text-[9px] uppercase tracking-[0.14em] text-amber-200 sm:text-[10px] sm:tracking-[0.18em]">
           <span className="size-1.5 bg-amber-300" />
-          Telemetry active
+
+          <span>
+            <span className="hidden sm:inline">
+              Telemetry{" "}
+            </span>
+            active
+          </span>
         </div>
+
+        <nav className="order-3 grid w-full grid-cols-3 border-t border-[#2A2620] pt-3 text-center font-mono text-[9px] uppercase tracking-[0.12em] text-stone-500 md:hidden">
+          <a
+            href="#lab"
+            className="border-r border-[#2A2620] py-1 transition hover:text-amber-300"
+          >
+            Lab
+          </a>
+
+          <a
+            href="#library"
+            className="border-r border-[#2A2620] py-1 transition hover:text-amber-300"
+          >
+            NASA Library
+          </a>
+
+          <a
+            href="#science"
+            className="py-1 transition hover:text-amber-300"
+          >
+            Science Math
+          </a>
+        </nav>
       </header>
 
       <section
         id="lab"
-        className="mx-auto mt-6 grid max-w-[1500px] gap-5 lg:grid-cols-[minmax(0,1fr)_330px]"
+        className="mx-auto mt-4 grid w-full max-w-[1500px] gap-4 sm:mt-6 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_330px]"
       >
-        <div className="rounded-lg border border-[#2A2620] bg-[#11100E]/90 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-stone-50">
+        <div className="min-w-0 rounded-lg border border-[#2A2620] bg-[#11100E]/90 p-3 shadow-[0_18px_60px_rgba(0,0,0,0.28)] sm:p-5">
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="text-base font-semibold text-stone-50 sm:text-lg">
                 Orbital View
               </h2>
 
-              <p className="text-sm text-stone-500">
+              <p className="mt-1 text-xs text-stone-500 sm:text-sm">
                 Live 3D view of the star and orbiting exoplanet
               </p>
             </div>
 
             <Orbit
-              className="text-amber-300"
-              size={22}
+              className="shrink-0 text-amber-300"
+              size={21}
             />
           </div>
 
-          <div className="relative h-[440px] overflow-hidden rounded-lg border border-[#2A2620] bg-[#050505] sm:h-[520px] lg:h-auto lg:aspect-[16/10]">
+          <div className="relative h-[500px] min-w-0 overflow-hidden rounded-lg border border-[#2A2620] bg-[#050505] sm:h-[520px] lg:h-auto lg:aspect-[16/10]">
             <OrbitalScene
               planetRadius={planetRadius}
               starRadius={starRadius}
@@ -185,8 +214,8 @@ export default function Home() {
               onOrbitUpdate={handleOrbitUpdate}
             />
 
-            <div className="absolute right-3 top-3 z-10 max-w-[calc(100%-1.5rem)] border border-[#44392C] bg-[#0A0907]/92 shadow-[0_12px_35px_rgba(0,0,0,0.45)] backdrop-blur-md sm:right-4 sm:top-4">
-              <div className="flex items-stretch">
+            <div className="absolute left-3 right-3 top-3 z-10 border border-[#44392C] bg-[#0A0907]/92 shadow-[0_12px_35px_rgba(0,0,0,0.45)] backdrop-blur-md sm:left-auto sm:right-4 sm:top-4">
+              <div className="grid grid-cols-[minmax(0,1fr)_44px] sm:flex sm:items-stretch">
                 <button
                   type="button"
                   onClick={() => {
@@ -194,7 +223,7 @@ export default function Home() {
                       (current) => !current,
                     );
                   }}
-                  className="flex min-w-24 items-center justify-center gap-2 border-r border-[#44392C] px-3 py-2 font-mono text-[10px] uppercase tracking-[0.12em] text-stone-200 transition hover:bg-amber-500/10 hover:text-amber-200"
+                  className="flex min-w-0 items-center justify-center gap-2 border-r border-[#44392C] px-3 py-2.5 font-mono text-[10px] uppercase tracking-[0.12em] text-stone-200 transition hover:bg-amber-500/10 hover:text-amber-200 sm:min-w-24 sm:py-2"
                 >
                   {isPaused ? (
                     <Play size={14} />
@@ -210,13 +239,13 @@ export default function Home() {
                   onClick={handleReset}
                   aria-label="Reset orbit"
                   title="Reset orbit"
-                  className="flex w-10 items-center justify-center border-r border-[#44392C] text-stone-400 transition hover:bg-amber-500/10 hover:text-amber-200"
+                  className="flex w-11 items-center justify-center text-stone-400 transition hover:bg-amber-500/10 hover:text-amber-200 sm:w-10 sm:border-r sm:border-[#44392C]"
                 >
                   <RotateCcw size={14} />
                 </button>
 
-                <div className="w-44 px-3 py-1.5">
-                  <div className="mb-0.5 flex items-center justify-between">
+                <div className="col-span-2 w-full border-t border-[#44392C] px-3 py-2 sm:col-span-1 sm:w-44 sm:border-t-0 sm:py-1.5">
+                  <div className="mb-1 flex items-center justify-between sm:mb-0.5">
                     <span className="font-mono text-[8px] uppercase tracking-[0.14em] text-stone-600">
                       Speed
                     </span>
@@ -241,7 +270,7 @@ export default function Home() {
                     className="h-1 w-full cursor-pointer accent-amber-400"
                   />
 
-                  <div className="mt-0.5 flex justify-between font-mono text-[8px] text-stone-600">
+                  <div className="mt-1 flex justify-between font-mono text-[8px] text-stone-600 sm:mt-0.5">
                     <span>0.2×</span>
                     <span>1.6×</span>
                     <span>3.0×</span>
@@ -250,44 +279,44 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="pointer-events-none absolute bottom-4 left-4 border-l-2 border-amber-400/60 bg-[#0B0907]/75 px-3 py-2 backdrop-blur-sm">
-              <div className="flex items-center gap-5">
-                <div>
-                  <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">
+            <div className="pointer-events-none absolute bottom-3 left-3 right-3 border-l-2 border-amber-400/60 bg-[#0B0907]/80 px-3 py-3 backdrop-blur-sm sm:bottom-4 sm:left-4 sm:right-auto sm:py-2">
+              <div className="grid grid-cols-2 gap-x-5 gap-y-3 sm:flex sm:items-center sm:gap-5">
+                <div className="min-w-0">
+                  <p className="font-mono text-[8px] uppercase tracking-[0.18em] text-stone-600 sm:text-[9px] sm:tracking-[0.2em]">
                     Target
                   </p>
 
-                  <p className="mt-1 font-mono text-xs text-amber-200">
+                  <p className="mt-1 truncate font-mono text-[10px] text-amber-200 sm:text-xs">
                     {activePlanetName ?? "EXO-001"}
                   </p>
                 </div>
 
                 <div>
-                  <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">
+                  <p className="font-mono text-[8px] uppercase tracking-[0.18em] text-stone-600 sm:text-[9px] sm:tracking-[0.2em]">
                     Orbital phase
                   </p>
 
-                  <p className="mt-1 font-mono text-xs text-stone-300">
+                  <p className="mt-1 font-mono text-[10px] text-stone-300 sm:text-xs">
                     {orbitalPhase.toFixed(3)}
                   </p>
                 </div>
 
                 <div>
-                  <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">
+                  <p className="font-mono text-[8px] uppercase tracking-[0.18em] text-stone-600 sm:text-[9px] sm:tracking-[0.2em]">
                     Inclination
                   </p>
 
-                  <p className="mt-1 font-mono text-xs text-stone-300">
+                  <p className="mt-1 font-mono text-[10px] text-stone-300 sm:text-xs">
                     {orbitalInclination.toFixed(0)}°
                   </p>
                 </div>
 
                 <div>
-                  <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">
+                  <p className="font-mono text-[8px] uppercase tracking-[0.18em] text-stone-600 sm:text-[9px] sm:tracking-[0.2em]">
                     State
                   </p>
 
-                  <p className="mt-1 font-mono text-xs text-stone-300">
+                  <p className="mt-1 font-mono text-[10px] text-stone-300 sm:text-xs">
                     {isPaused ? "PAUSED" : "RUNNING"}
                   </p>
                 </div>
@@ -296,21 +325,21 @@ export default function Home() {
           </div>
         </div>
 
-        <aside className="rounded-lg border border-[#2A2620] bg-[#11100E]/90 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
-          <div className="mb-5 flex items-center justify-between">
+        <aside className="min-w-0 rounded-lg border border-[#2A2620] bg-[#11100E]/90 p-4 shadow-[0_18px_60px_rgba(0,0,0,0.28)] sm:p-5">
+          <div className="mb-5 flex items-start justify-between gap-3">
             <div>
-              <h2 className="text-lg font-semibold text-stone-50">
+              <h2 className="text-base font-semibold text-stone-50 sm:text-lg">
                 Mission Controls
               </h2>
 
-              <p className="text-sm text-stone-500">
+              <p className="text-xs text-stone-500 sm:text-sm">
                 Simulation parameters
               </p>
             </div>
 
             <Sigma
-              className="text-rose-300"
-              size={22}
+              className="shrink-0 text-rose-300"
+              size={21}
             />
           </div>
 
@@ -322,7 +351,7 @@ export default function Home() {
                     Planet Radius
                   </p>
 
-                  <p className="mt-1 font-mono text-2xl text-amber-200">
+                  <p className="mt-1 font-mono text-xl text-amber-200 sm:text-2xl">
                     {planetRadius.toFixed(2)} R⊕
                   </p>
                 </div>
@@ -362,7 +391,7 @@ export default function Home() {
                     Star Radius
                   </p>
 
-                  <p className="mt-1 font-mono text-2xl text-stone-200">
+                  <p className="mt-1 font-mono text-xl text-stone-200 sm:text-2xl">
                     {starRadius.toFixed(2)} R☉
                   </p>
                 </div>
@@ -402,7 +431,7 @@ export default function Home() {
                     Orbit Inclination
                   </p>
 
-                  <p className="mt-1 font-mono text-2xl text-amber-200">
+                  <p className="mt-1 font-mono text-xl text-amber-200 sm:text-2xl">
                     {orbitalInclination.toFixed(0)}°
                   </p>
                 </div>
@@ -427,7 +456,7 @@ export default function Home() {
                 className="mt-5 h-1.5 w-full cursor-pointer accent-amber-400"
               />
 
-              <div className="mt-2 flex justify-between font-mono text-[10px] text-stone-600">
+              <div className="mt-2 flex justify-between font-mono text-[9px] text-stone-600 sm:text-[10px]">
                 <span>60° tilted</span>
                 <span>75°</span>
                 <span>90° edge-on</span>
@@ -445,7 +474,7 @@ export default function Home() {
                     Observation Noise
                   </p>
 
-                  <p className="mt-1 font-mono text-2xl text-stone-200">
+                  <p className="mt-1 font-mono text-xl text-stone-200 sm:text-2xl">
                     {noisePpm.toFixed(0)} ppm
                   </p>
                 </div>
@@ -484,7 +513,7 @@ export default function Home() {
                     Transit Signal
                   </p>
 
-                  <p className="mt-1 font-mono text-2xl text-rose-300">
+                  <p className="mt-1 font-mono text-xl text-rose-300 sm:text-2xl">
                     {effectiveTransitDepthPercent.toFixed(4)}%
                   </p>
                 </div>
@@ -526,32 +555,32 @@ export default function Home() {
         </aside>
       </section>
 
-      <section className="mx-auto mt-5 max-w-[1500px] rounded-lg border border-[#2A2620] bg-[#11100E]/90 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
+      <section className="mx-auto mt-4 w-full max-w-[1500px] min-w-0 rounded-lg border border-[#2A2620] bg-[#11100E]/90 p-3 shadow-[0_18px_60px_rgba(0,0,0,0.28)] sm:mt-5 sm:p-5">
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+          <div className="flex min-w-0 items-start gap-3">
             <Database
-              className="text-rose-300"
+              className="mt-1 shrink-0 text-rose-300"
               size={20}
             />
 
-            <div>
-              <h2 className="text-lg font-semibold text-stone-50">
+            <div className="min-w-0">
+              <h2 className="text-base font-semibold text-stone-50 sm:text-lg">
                 Live Light-Curve
               </h2>
 
-              <p className="text-sm text-stone-500">
+              <p className="mt-1 text-xs leading-5 text-stone-500 sm:text-sm">
                 Theoretical model and simulated telescope observation
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 border-l-2 border-rose-400/70 pl-3 font-mono text-[10px] uppercase tracking-[0.18em] text-rose-300">
+          <div className="flex items-center gap-2 border-l-2 border-rose-400/70 pl-3 font-mono text-[9px] uppercase tracking-[0.14em] text-rose-300 sm:text-[10px] sm:tracking-[0.18em]">
             <span className="size-1.5 animate-pulse bg-rose-300" />
             Photometry / live
           </div>
         </div>
 
-        <div className="h-[360px] rounded-md border border-[#2A2620] bg-[#090807] p-4 sm:h-[400px] sm:p-5">
+        <div className="h-[340px] min-w-0 rounded-md border border-[#2A2620] bg-[#090807] p-2 sm:h-[400px] sm:p-5">
           <LightCurveChart
             orbitalPhase={orbitalPhase}
             transitDepthPercent={
