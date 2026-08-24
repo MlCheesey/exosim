@@ -178,9 +178,9 @@ export function LightCurveChart({
         {
           label: "Theoretical curve",
           data: theoreticalBrightness,
-          borderColor: "#E08B78",
+          borderColor: "#EF8E93",
           backgroundColor:
-            "rgba(190, 85, 65, 0.10)",
+            "rgba(239, 142, 147, 0.07)",
           borderWidth: 2,
           pointRadius: 0,
           tension: 0.35,
@@ -192,9 +192,9 @@ export function LightCurveChart({
           data: observedBrightness,
           borderColor: "transparent",
           backgroundColor:
-            "rgba(214, 184, 145, 0.65)",
+            "rgba(223, 196, 151, 0.62)",
           pointBackgroundColor:
-            "rgba(214, 184, 145, 0.65)",
+            "rgba(223, 196, 151, 0.62)",
           pointBorderWidth: 0,
           pointRadius:
             noisePpm > 0 ? 1.8 : 0,
@@ -205,9 +205,9 @@ export function LightCurveChart({
         {
           label: "Current measurement",
           data: currentPointData,
-          borderColor: "#F3C58F",
-          backgroundColor: "#F3C58F",
-          pointBorderColor: "#7A3F33",
+          borderColor: "#F7D493",
+          backgroundColor: "#F7D493",
+          pointBorderColor: "#6D352E",
           pointBorderWidth: 2,
           pointRadius: 6,
           pointHoverRadius: 7,
@@ -251,14 +251,15 @@ export function LightCurveChart({
             position: "bottom",
             align: "start",
             labels: {
-              color: "#78716C",
+              color: "#716D66",
               usePointStyle: true,
               pointStyle: "rect",
               boxWidth: 6,
               boxHeight: 6,
               padding: 18,
               font: {
-                family: "monospace",
+                family:
+                  "ui-monospace, SFMono-Regular, Menlo, monospace",
                 size: 9,
               },
               filter(item) {
@@ -270,11 +271,12 @@ export function LightCurveChart({
             },
           },
           tooltip: {
-            backgroundColor: "#15120F",
-            borderColor: "#4A3A2E",
+            backgroundColor: "#070809",
+            borderColor:
+              "rgba(245, 181, 76, 0.28)",
             borderWidth: 1,
             titleColor: "#D6D3D1",
-            bodyColor: "#F3C58F",
+            bodyColor: "#F7D493",
             displayColors: true,
             callbacks: {
               title(items) {
@@ -300,26 +302,28 @@ export function LightCurveChart({
           x: {
             grid: {
               color:
-                "rgba(120, 102, 82, 0.10)",
+                "rgba(255, 255, 255, 0.045)",
             },
             border: {
               color:
-                "rgba(120, 102, 82, 0.35)",
+                "rgba(255, 255, 255, 0.10)",
             },
             ticks: {
-              color: "#78716C",
+              color: "#69655F",
               maxTicksLimit: 6,
               font: {
-                family: "monospace",
+                family:
+                  "ui-monospace, SFMono-Regular, Menlo, monospace",
                 size: 10,
               },
             },
             title: {
               display: true,
               text: "ORBITAL PHASE",
-              color: "#78716C",
+              color: "#69655F",
               font: {
-                family: "monospace",
+                family:
+                  "ui-monospace, SFMono-Regular, Menlo, monospace",
                 size: 10,
               },
             },
@@ -333,17 +337,18 @@ export function LightCurveChart({
               upperChartExcursion,
             grid: {
               color:
-                "rgba(120, 102, 82, 0.12)",
+                "rgba(255, 255, 255, 0.05)",
             },
             border: {
               color:
-                "rgba(120, 102, 82, 0.35)",
+                "rgba(255, 255, 255, 0.10)",
             },
             ticks: {
-              color: "#78716C",
+              color: "#69655F",
               maxTicksLimit: 5,
               font: {
-                family: "monospace",
+                family:
+                  "ui-monospace, SFMono-Regular, Menlo, monospace",
                 size: 10,
               },
               callback(value) {
@@ -355,9 +360,10 @@ export function LightCurveChart({
             title: {
               display: true,
               text: "RELATIVE BRIGHTNESS",
-              color: "#78716C",
+              color: "#69655F",
               font: {
-                family: "monospace",
+                family:
+                  "ui-monospace, SFMono-Regular, Menlo, monospace",
                 size: 10,
               },
             },
@@ -372,66 +378,67 @@ export function LightCurveChart({
 
   return (
     <div className="flex h-full w-full flex-col">
-<div className="mb-3 grid grid-cols-2 gap-x-4 gap-y-3 sm:flex sm:items-start sm:justify-between sm:gap-4">
-  <div className="col-span-2 grid grid-cols-2 gap-4 sm:flex sm:items-start sm:gap-8">
-    <div className="min-w-0">
-      <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">
-        Observed flux
-      </p>
+      <div className="mb-4 grid grid-cols-2 gap-x-5 gap-y-3 sm:flex sm:items-start sm:justify-between sm:gap-6">
+        <div className="col-span-2 grid grid-cols-2 gap-5 sm:flex sm:items-start sm:gap-10">
+          <div className="min-w-0">
+            <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-stone-700">
+              Observed flux
+            </p>
+            <p className="mt-1 font-mono text-lg text-stone-200 sm:text-xl">
+              {currentObservedBrightness.toFixed(4)}%
+            </p>
+          </div>
 
-      <p className="mt-1 font-mono text-xl text-stone-200">
-        {currentObservedBrightness.toFixed(4)}%
-      </p>
-    </div>
+          <div className="min-w-0">
+            <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-stone-700">
+              Noise floor
+            </p>
+            <p className="mt-1 font-mono text-sm text-stone-400">
+              {noisePpm.toFixed(0)} ppm
+            </p>
+          </div>
+        </div>
 
-    <div className="min-w-0">
-      <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">
-        Noise floor
-      </p>
+        <div
+          className={`col-span-2 min-h-[38px] min-w-[150px] justify-self-start border-l pl-4 sm:col-span-1 sm:justify-self-auto ${
+            isTransiting
+              ? "border-rose-300/60"
+              : "border-amber-300/50"
+          }`}
+        >
+          <p className="font-mono text-[8px] uppercase tracking-[0.18em] text-stone-700">
+            Detection state
+          </p>
 
-      <p className="mt-1 font-mono text-sm text-stone-400">
-        {noisePpm.toFixed(0)} ppm
-      </p>
-    </div>
-  </div>
+          <div className="mt-1 flex items-center gap-2">
+            <span
+              className={
+                isTransiting
+                  ? "size-1.5 shrink-0 rounded-full bg-rose-300 shadow-[0_0_10px_rgba(239,142,147,0.5)]"
+                  : "size-1.5 shrink-0 rounded-full bg-amber-300 shadow-[0_0_10px_rgba(245,181,76,0.45)]"
+              }
+            />
+            <p
+              className={
+                isTransiting
+                  ? "whitespace-nowrap font-mono text-[9px] uppercase tracking-[0.14em] text-rose-300"
+                  : "whitespace-nowrap font-mono text-[9px] uppercase tracking-[0.14em] text-amber-200"
+              }
+            >
+              {isTransiting
+                ? "Transit detected"
+                : "Baseline stable"}
+            </p>
+          </div>
+        </div>
+      </div>
 
-  <div
-    className={`col-span-2 min-h-[38px] min-w-[150px] justify-self-start border-l-2 pl-3 sm:col-span-1 sm:justify-self-auto ${
-      isTransiting
-        ? "border-rose-400"
-        : "border-amber-400/60"
-    }`}
-  >
-    <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-600">
-      Detection state
-    </p>
-
-    <div className="mt-1 flex items-center gap-2">
-      <span
-        className={
-          isTransiting
-            ? "size-1.5 shrink-0 bg-rose-300"
-            : "size-1.5 shrink-0 bg-amber-300"
-        }
-      />
-
-      <p
-        className={
-          isTransiting
-            ? "whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.14em] text-rose-300"
-            : "whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.14em] text-amber-200"
-        }
-      >
-        {isTransiting
-          ? "Transit detected"
-          : "Baseline stable"}
-      </p>
-    </div>
-  </div>
-</div>
       <div className="min-h-0 flex-1">
-        <Line          data={chartData}
+        <Line
+          data={chartData}
           options={chartOptions}
         />
-      </div>    </div>  );
+      </div>
+    </div>
+  );
 }

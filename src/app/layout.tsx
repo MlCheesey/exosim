@@ -1,34 +1,44 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import {
+  Inter,
+  JetBrains_Mono,
+  Space_Grotesk,
+} from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const displayFont = Space_Grotesk({
+  variable: "--font-exosim-display",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const interfaceFont = Inter({
+  variable: "--font-exosim-interface",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const dataFont = JetBrains_Mono({
+  variable: "--font-exosim-data",
+  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "ExoSim | Exoplanet Transit Lab",
+  title: "ExoSim — Exoplanet Transit Lab",
   description:
-    "An interactive 3D exoplanet transit and light-curve simulator.",
+    "An interactive 3D simulator for exploring exoplanet transits, orbital geometry, and telescope light curves.",
 };
-
-type RootLayoutProps = Readonly<{
-  children: React.ReactNode;
-}>;
 
 export default function RootLayout({
   children,
-}: RootLayoutProps) {
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${displayFont.variable} ${interfaceFont.variable} ${dataFont.variable}`}
       >
         {children}
       </body>

@@ -1,8 +1,6 @@
 import {
   ArrowDownToLine,
   ExternalLink,
-  Library,
-  Orbit,
 } from "lucide-react";
 
 export type ExoplanetPreset = {
@@ -69,145 +67,161 @@ export default function ExoplanetLibrary({
   return (
     <section
       id="library"
-      className="mx-auto mt-5 max-w-[1500px] border border-[#2A2620] bg-[#11100E]/90 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)] sm:p-6"
+      className="mx-auto w-full max-w-[1500px] border-b border-white/[0.08] px-4 py-10 sm:px-6 sm:py-14"
     >
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <Library
-            className="mt-1 text-amber-300"
-            size={21}
-          />
+      <div className="flex flex-wrap items-end justify-between gap-5">
+        <div className="flex min-w-0 items-start gap-4">
+          <span className="mt-1 font-mono text-[9px] tracking-[0.2em] text-amber-300/70">
+            04
+          </span>
 
           <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-amber-300">
-              NASA Data Library
+            <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-stone-600">
+              NASA archive
             </p>
 
-            <h2 className="mt-1 text-xl font-semibold text-stone-50">
-              Explore confirmed exoplanets
+            <h2 className="mt-1 font-display text-xl font-medium tracking-[-0.025em] text-stone-50 sm:text-2xl">
+              Confirmed planetary systems
             </h2>
 
-            <p className="mt-1 max-w-2xl text-sm leading-6 text-stone-500">
-              Load real planetary and stellar measurements into
-              ExoSim and compare the transit signals produced by
+            <p className="mt-2 max-w-2xl text-xs leading-5 text-stone-500 sm:text-sm sm:leading-6">
+              Load published planetary and stellar measurements into
+              the simulator and compare the signals produced by
               different systems.
             </p>
           </div>
         </div>
 
-        <div className="border-l-2 border-amber-400 bg-[#0A0908] px-4 py-3">
-          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-600">
-            Data source
-          </p>
-
-          <p className="mt-1 font-mono text-xs text-amber-200">
-            NASA Exoplanet Archive
-          </p>
-        </div>
+        <a
+          href="https://exoplanetarchive.ipac.caltech.edu/"
+          target="_blank"
+          rel="noreferrer"
+          className="group flex items-center gap-3 border-b border-white/[0.1] pb-2 text-xs text-stone-500 transition hover:border-amber-300/50 hover:text-amber-200"
+        >
+          NASA Exoplanet Archive
+          <ExternalLink
+            size={13}
+            className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+          />
+        </a>
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-3">
-        {exoplanetPresets.map((preset, index) => {
-          const isActive =
-            activePlanetName === preset.name;
+      <div className="mt-8 grid border-y border-white/[0.08] lg:grid-cols-3">
+        {exoplanetPresets.map(
+          (preset, index) => {
+            const isActive =
+              activePlanetName === preset.name;
 
-          return (
-            <article
-              key={preset.name}
-              className={
-                isActive
-                  ? "border border-amber-400/60 bg-[#0C0A07]"
-                  : "border border-[#332B22] bg-[#090807]"
-              }
-            >
-              <div className="flex items-start justify-between border-b border-[#2A2620] p-5">
-                <div>
-                  <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">
-                    Archive target{" "}
-                    {String(index + 1).padStart(
-                      2,
-                      "0",
-                    )}
-                  </p>
+            return (
+              <article
+                key={preset.name}
+                className={`relative px-1 py-7 sm:px-5 lg:px-7 ${
+                  index > 0
+                    ? "border-t border-white/[0.08] lg:border-l lg:border-t-0"
+                    : ""
+                }`}
+              >
+                {isActive ? (
+                  <span className="absolute inset-y-5 left-0 w-px bg-amber-300 shadow-[0_0_18px_rgba(245,181,76,0.4)]" />
+                ) : null}
 
-                  <h3 className="mt-2 text-lg font-semibold text-stone-100">
-                    {preset.name}
-                  </h3>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-stone-700">
+                      Target {String(index + 1).padStart(2, "0")}
+                    </p>
 
-                  <p className="mt-1 font-mono text-xs text-rose-300">
-                    {preset.planetType}
-                  </p>
+                    <h3 className="mt-3 font-display text-xl font-medium tracking-[-0.025em] text-stone-100">
+                      {preset.name}
+                    </h3>
+
+                    <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-rose-300">
+                      {preset.planetType}
+                    </p>
+                  </div>
+
+                  <span
+                    className={`mt-1 size-2 rounded-full ${
+                      isActive
+                        ? "bg-amber-300 shadow-[0_0_14px_rgba(245,181,76,0.65)]"
+                        : "border border-stone-700"
+                    }`}
+                  />
                 </div>
 
-                <Orbit
-                  className={
-                    isActive
-                      ? "text-amber-300"
-                      : "text-stone-600"
-                  }
-                  size={20}
-                />
-             </div>
-              <div className="divide-y divide-[#2A2620] px-5">
-                <div className="flex items-center justify-between gap-4 py-3">
-                  <span className="text-xs text-stone-500">
-                    Planet radius
-                  </span>
-                  <span className="font-mono text-xs text-amber-200">
-                    {preset.planetRadius.toFixed(2)} R
-                  </span>                </div>
-                <div className="flex items-center justify-between gap-4 py-3">
-                  <span className="text-xs text-stone-500">
-                    Star radius
-                  </span>
-                  <span className="font-mono text-xs text-stone-300">
-                    {preset.starRadius.toFixed(2)} R
-                  </span>                </div>
-                <div className="flex items-center justify-between gap-4 py-3">
-                  <span className="text-xs text-stone-500">
-                    Orbital period
-                  </span>
-                  <span className="font-mono text-xs text-stone-300">
-                    {preset.orbitalPeriod} days
-                  </span>                </div>
-                <div className="flex items-center justify-between gap-4 py-3">
-                  <span className="text-xs text-stone-500">
-                    Discovery
-                  </span>
-                  <span className="font-mono text-xs text-stone-300">
-                    {preset.discoveryYear}
-                  </span>                </div>              </div>
-              <div className="p-5">
-                <p className="min-h-16 text-xs leading-5 text-stone-500">
+                <dl className="mt-6 divide-y divide-white/[0.07] border-y border-white/[0.07]">
+                  {[
+                    [
+                      "Planet radius",
+                      `${preset.planetRadius.toFixed(2)} R⊕`,
+                    ],
+                    [
+                      "Star radius",
+                      `${preset.starRadius.toFixed(2)} R☉`,
+                    ],
+                    [
+                      "Orbital period",
+                      `${preset.orbitalPeriod} days`,
+                    ],
+                    [
+                      "Discovery",
+                      String(preset.discoveryYear),
+                    ],
+                  ].map(([label, value]) => (
+                    <div
+                      key={label}
+                      className="flex items-center justify-between gap-4 py-3"
+                    >
+                      <dt className="text-xs text-stone-600">
+                        {label}
+                      </dt>
+                      <dd className="font-mono text-[11px] text-stone-300">
+                        {value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+
+                <p className="mt-5 min-h-16 text-xs leading-5 text-stone-500">
                   {preset.description}
                 </p>
-                <div className="mt-5 grid grid-cols-[1fr_auto] border border-[#3A3024]">
-                  <button                    type="button"
+
+                <div className="mt-5 grid grid-cols-[1fr_42px] gap-2">
+                  <button
+                    type="button"
                     onClick={() => {
                       onLoadPreset(preset);
                     }}
-                    className="flex items-center justify-center gap-2 px-3 py-2.5 font-mono text-[10px] uppercase tracking-[0.14em] text-stone-200 transition hover:bg-amber-500/10 hover:text-amber-200"
+                    className="exo-button px-4"
                   >
                     <ArrowDownToLine size={14} />
-
                     {isActive
-                      ? "Loaded"
-                      : "Load into lab"}
+                      ? "Loaded in simulator"
+                      : "Load system"}
                   </button>
-                  <a                    href={preset.sourceUrl}
+
+                  <a
+                    href={preset.sourceUrl}
                     target="_blank"
                     rel="noreferrer"
                     aria-label={`Open NASA data for ${preset.name}`}
                     title="Open NASA source"
-                    className="flex w-11 items-center justify-center border-l border-[#3A3024] text-stone-500 transition hover:bg-amber-500/10 hover:text-amber-200"
+                    className="exo-icon-button"
                   >
                     <ExternalLink size={14} />
-                  </a>                </div>              </div>            </article>          );
-        })}
+                  </a>
+                </div>
+              </article>
+            );
+          },
+        )}
       </div>
-      <p className="mt-4 border-l-2 border-stone-700 pl-3 text-xs leading-5 text-stone-600">
+
+      <p className="mt-5 max-w-4xl border-l border-white/[0.1] pl-4 text-[11px] leading-5 text-stone-600">
         Radius values are rounded from published archive measurements.
-        ExoSim uses a standardized edge-on viewing angle when loading a
-        system so its predicted transit can be compared clearly.
-      </p>    </section>  );
+        Systems load at a standardized edge-on angle so their predicted
+        transits can be compared clearly.
+      </p>
+    </section>
+  );
 }
