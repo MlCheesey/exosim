@@ -15,6 +15,10 @@ import ScienceMath from "@/components/ScienceMath";
 import ExoplanetLibrary, {
   type ExoplanetPreset,
 } from "@/components/PlanetPresetLibrary";
+import {
+  calculateTransitVisibility,
+  getTransitGeometry,
+} from "@/lib/transitMath";
 
 export default function Home() {
   const [planetRadius, setPlanetRadius] = useState(1);
@@ -41,46 +45,35 @@ export default function Home() {
   const maximumTransitDepthPercent =
     planetToStarRadiusRatio ** 2 * 100;
 
-  const renderedPlanetRadius = 0.38 * planetRadius;
-  const renderedStarRadius = 1.35 * starRadius;
+  const renderedPlanetRadius =
+    0.38 * planetRadius;
+
+  const renderedStarRadius =
+    1.35 * starRadius;
 
   const inclinationRadians =
     (orbitalInclination * Math.PI) / 180;
 
   const projectedTransitOffset = Math.abs(
-    0.12 + 4 * Math.cos(inclinationRadians),
+    0.12 +
+      4 * Math.cos(inclinationRadians),
   );
 
-  const fullTransitLimit = Math.max(
-    renderedStarRadius - renderedPlanetRadius,
-    0,
-  );
-
-  const noTransitLimit =
-    renderedStarRadius + renderedPlanetRadius;
-
-  let transitVisibility = 1;
-
-  if (projectedTransitOffset >= noTransitLimit) {
-    transitVisibility = 0;
-  } else if (
-    projectedTransitOffset > fullTransitLimit
-  ) {
-    transitVisibility =
-      (noTransitLimit - projectedTransitOffset) /
-      (noTransitLimit - fullTransitLimit);
-  }
+  const transitVisibility =
+    calculateTransitVisibility(
+      renderedPlanetRadius,
+      renderedStarRadius,
+      projectedTransitOffset,
+    );
 
   const effectiveTransitDepthPercent =
     maximumTransitDepthPercent *
     transitVisibility;
 
   const transitGeometry =
-    transitVisibility === 0
-      ? "No transit"
-      : transitVisibility < 0.999
-        ? "Grazing"
-        : "Full transit";
+    getTransitGeometry(
+      transitVisibility,
+    );
 
   const handleOrbitUpdate = useCallback(
     (phase: number) => {
@@ -182,7 +175,7 @@ export default function Home() {
             <OrbitalScene
               planetRadius={planetRadius}
               starRadius={starRadius}
-                planetName={activePlanetName}
+              planetName={activePlanetName}
               orbitalInclination={
                 orbitalInclination
               }
@@ -349,6 +342,7 @@ export default function Home() {
                   setPlanetRadius(
                     Number(event.target.value),
                   );
+
                   setActivePlanetName(undefined);
                 }}
                 aria-label="Planet radius"
@@ -388,6 +382,7 @@ export default function Home() {
                   setStarRadius(
                     Number(event.target.value),
                   );
+
                   setActivePlanetName(undefined);
                 }}
                 aria-label="Star radius"
@@ -496,18 +491,18 @@ export default function Home() {
 
                 <div
                   className={
-                    transitVisibility === 0
+                    transitGeometry === "No transit"
                       ? "flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500"
-                      : transitVisibility < 0.999
+                      : transitGeometry === "Grazing"
                         ? "flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.16em] text-amber-200"
                         : "flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.16em] text-rose-300"
                   }
                 >
                   <span
                     className={
-                      transitVisibility === 0
+                      transitGeometry === "No transit"
                         ? "size-1.5 bg-stone-600"
-                        : transitVisibility < 0.999
+                        : transitGeometry === "Grazing"
                           ? "size-1.5 bg-amber-300"
                           : "size-1.5 bg-rose-300"
                     }
@@ -519,12 +514,11 @@ export default function Home() {
 
               <div className="mt-4 border-t border-[#2A2620] pt-3">
                 <p className="font-mono text-xs text-stone-500">
-                  Maximum signal ·{" "}
-                  {maximumTransitDepthPercent.toFixed(4)}%
+                  Maximum signal · {maximumTransitDepthPercent.toFixed(4)}%
                 </p>
 
                 <p className="mt-1 text-xs text-stone-600">
-                  Visible signal after orbital alignment
+                  Visible signal after exact disk-overlap calculation
                 </p>
               </div>
             </div>
