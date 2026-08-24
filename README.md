@@ -1,36 +1,224 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+ExoSim
 
-## Getting Started
+Interactive Exoplanet Transit Laboratory
 
-First, run the development server:
+Explore how planetary size, stellar size, orbital inclination, and telescope noise shape an observed transit signal.
 
-```bash
+Open the live simulator · View the source
+
+</div>
+
+About
+
+ExoSim is an interactive 3D exoplanet transit simulator. It places the observer behind an orbiting planet, looking through a space-station-style observation window toward its host star.
+
+As the planet crosses the stellar disk, ExoSim synchronizes the 3D orbit with a live photometric light curve. Users can change the physical system, add telescope noise, load confirmed exoplanets, and inspect the mathematics behind the resulting brightness dip.
+
+Features
+
+Real-time 3D star, planet, atmosphere, orbit, and observation-window scene
+
+Full, grazing, and missed transit geometry
+
+Exact circle-overlap calculation for partial transits
+
+Live theoretical and simulated telescope light curves
+
+Adjustable planet radius, star radius, inclination, noise, and orbital speed
+
+Pause, resume, and orbit reset controls
+
+Confirmed exoplanet presets from the NASA Exoplanet Archive
+
+Live transit-depth calculations and educational explanations
+
+Responsive interface for desktop and mobile
+
+Accessible reduced-motion and keyboard-focus support
+
+How to use ExoSim
+
+Choose a system — begin with the default system, adjust it manually, or load a confirmed planet from the archive.
+
+Set the geometry — change the planet radius, star radius, orbital inclination, and observation noise.
+
+Observe the transit — watch the planet cross the star and use the pause, reset, and speed controls.
+
+Read the signal — compare the live brightness dip with the calculated transit depth and Science section.
+
+The science
+
+For a centered transit, the approximate fractional loss of light is:
+
+$$
+\frac{\Delta F}{F} = \left(\frac{R_p}{R_\star}\right)^2
+$$
+
+Where:
+
+$R_p$ is the planet radius.
+
+$R_\star$ is the stellar radius.
+
+$\Delta F/F$ is the fraction of starlight blocked.
+
+Inclination determines whether the planet fully crosses, grazes, or misses the visible stellar disk. During a grazing event, ExoSim calculates the exact overlap area of the two projected circles instead of scaling the signal linearly.
+
+Observation noise is specified in parts per million and is added deterministically to the simulated measurements, allowing the same settings to produce a stable and comparable dataset.
+
+Included planetary systems
+
+System
+
+Planet type
+
+Planet radius
+
+Stellar radius
+
+Period
+
+Kepler-10 b
+
+Super Earth
+
+1.47 R⊕
+
+1.06 R☉
+
+0.84 days
+
+Kepler-186 f
+
+Super Earth
+
+1.17 R⊕
+
+0.52 R☉
+
+129.9 days
+
+Kepler-20 e
+
+Terrestrial
+
+0.82 R⊕
+
+0.94 R☉
+
+6.1 days
+
+Preset measurements are rounded from published records in the NASA Exoplanet Archive.
+
+Technology
+
+Area
+
+Technology
+
+Application
+
+Next.js 16, React 19, TypeScript
+
+Styling
+
+Tailwind CSS 4
+
+3D rendering
+
+Three.js, React Three Fiber, Drei
+
+Visual effects
+
+React Three Postprocessing
+
+Charts
+
+Chart.js, React Chart.js 2
+
+Icons
+
+Lucide React
+
+Deployment
+
+Vercel
+
+The stellar and planetary surfaces are generated procedurally in the browser. ExoSim does not require external texture files or an API key.
+
+Run locally
+
+Requirements
+
+Node.js 20 or newer
+
+npm
+
+Installation
+
+git clone https://github.com/MlCheesey/exosim.git
+cd exosim
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Production build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+npm run build
+npm start
 
-## Learn More
+Project structure
 
-To learn more about Next.js, take a look at the following resources:
+src/
+├── app/
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
+├── components/
+│   ├── ExoSimLogo.tsx
+│   ├── HowToUse.tsx
+│   ├── LightCurveChart.tsx
+│   ├── OrbitalScene.tsx
+│   ├── PlanetPresetLibrary.tsx
+│   └── ScienceMath.tsx
+├── data/
+│   └── planetVisualProfiles.ts
+└── lib/
+    └── transitMath.ts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Design approach
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+ExoSim uses three distinct typographic roles:
 
-## Deploy on Vercel
+Space Grotesk for display headings and the project identity
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Inter for controls, descriptions, and navigation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+JetBrains Mono for telemetry, measurements, and scientific values
+
+The interface avoids conventional dashboard cards. Instead, it uses an open observation-console layout with fine dividers, restrained amber and rose signals, and a custom eclipse-and-light-curve logo.
+
+Current limitations
+
+The visual orbital period is accelerated for practical interaction and is not mapped directly to a preset's real period.
+
+The current model focuses on transit geometry and does not simulate limb darkening, stellar variability, multiple planets, or orbital eccentricity.
+
+Preset values are educational reference inputs and should not replace professional astronomical analysis tools.
+
+Planned improvements
+
+Export simulated observations as CSV
+
+Add automated tests for transit geometry and brightness calculations
+
+Extend accessibility and performance audits
+
+Add more confirmed planetary systems and observation modes
+
+Data and credits
+
+Planetary measurements are based on the NASA Exoplanet Archive.
+
+ExoSim was designed, tested, and integrated by MlCheesey. AI assistance was used during implementation, debugging, and design iteration; final product decisions and verification remained with the project author.
