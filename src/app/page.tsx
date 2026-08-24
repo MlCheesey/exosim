@@ -10,6 +10,7 @@ import {
   Play,
   RotateCcw,
 } from "lucide-react";
+import HowToUse from "@/components/HowToUse";
 import ExoSimLogo from "@/components/ExoSimLogo";
 import { LightCurveChart } from "@/components/LightCurveChart";
 import OrbitalScene from "@/components/OrbitalScene";
@@ -318,6 +319,8 @@ export default function Home() {
           </nav>
         </div>
       </header>
+
+      <HowToUse />
 
       <section
         id="lab"
