@@ -153,6 +153,62 @@ export function LightCurveChart({
   const isTransiting =
     currentTheoreticalBrightness < 100;
 
+  function handleExportCsv() {
+    const header = [
+      "orbital_phase",
+      "theoretical_brightness_percent",
+      "simulated_observation_percent",
+      "transit_depth_percent",
+      "noise_ppm",
+    ].join(",");
+
+    const rows = phases.map(
+      (phase, index) => {
+        return [
+          phase.toFixed(6),
+          theoreticalBrightness[
+            index
+          ].toFixed(8),
+          observedBrightness[
+            index
+          ].toFixed(8),
+          transitDepthPercent.toFixed(8),
+          noisePpm.toFixed(0),
+        ].join(",");
+      },
+    );
+
+    const csvContent = [
+      header,
+      ...rows,
+    ].join("\n");
+
+    const blob = new Blob(
+      [csvContent],
+      {
+        type: "text/csv;charset=utf-8",
+      },
+    );
+
+    const downloadUrl =
+      URL.createObjectURL(blob);
+
+    const downloadLink =
+      document.createElement("a");
+
+    downloadLink.href = downloadUrl;
+    downloadLink.download =
+      "exosim-light-curve.csv";
+
+    document.body.appendChild(
+      downloadLink,
+    );
+
+    downloadLink.click();
+    downloadLink.remove();
+    URL.revokeObjectURL(downloadUrl);
+  }
+
   const chartData = useMemo<
     ChartData<
       "line",
@@ -399,37 +455,47 @@ export function LightCurveChart({
           </div>
         </div>
 
-        <div
-          className={`col-span-2 min-h-[38px] min-w-[150px] justify-self-start border-l pl-4 sm:col-span-1 sm:justify-self-auto ${
-            isTransiting
-              ? "border-rose-300/60"
-              : "border-amber-300/50"
-          }`}
-        >
-          <p className="font-mono text-[8px] uppercase tracking-[0.18em] text-stone-700">
-            Detection state
-          </p>
-
-          <div className="mt-1 flex items-center gap-2">
-            <span
-              className={
-                isTransiting
-                  ? "size-1.5 shrink-0 rounded-full bg-rose-300 shadow-[0_0_10px_rgba(239,142,147,0.5)]"
-                  : "size-1.5 shrink-0 rounded-full bg-amber-300 shadow-[0_0_10px_rgba(245,181,76,0.45)]"
-              }
-            />
-            <p
-              className={
-                isTransiting
-                  ? "whitespace-nowrap font-mono text-[9px] uppercase tracking-[0.14em] text-rose-300"
-                  : "whitespace-nowrap font-mono text-[9px] uppercase tracking-[0.14em] text-amber-200"
-              }
-            >
-              {isTransiting
-                ? "Transit detected"
-                : "Baseline stable"}
+        <div className="col-span-2 flex items-start gap-3 justify-self-start sm:col-span-1 sm:justify-self-auto">
+          <div
+            className={`min-h-[38px] min-w-[150px] border-l pl-4 ${
+              isTransiting
+                ? "border-rose-300/60"
+                : "border-amber-300/50"
+            }`}
+          >
+            <p className="font-mono text-[8px] uppercase tracking-[0.18em] text-stone-700">
+              Detection state
             </p>
+
+            <div className="mt-1 flex items-center gap-2">
+              <span
+                className={
+                  isTransiting
+                    ? "size-1.5 shrink-0 rounded-full bg-rose-300 shadow-[0_0_10px_rgba(239,142,147,0.5)]"
+                    : "size-1.5 shrink-0 rounded-full bg-amber-300 shadow-[0_0_10px_rgba(245,181,76,0.45)]"
+                }
+              />
+              <p
+                className={
+                  isTransiting
+                    ? "whitespace-nowrap font-mono text-[9px] uppercase tracking-[0.14em] text-rose-300"
+                    : "whitespace-nowrap font-mono text-[9px] uppercase tracking-[0.14em] text-amber-200"
+                }
+              >
+                {isTransiting
+                  ? "Transit detected"
+                  : "Baseline stable"}
+              </p>
+            </div>
           </div>
+
+          <button
+            type="button"
+            onClick={handleExportCsv}
+            className="exo-button min-h-[38px] whitespace-nowrap px-3 text-[9px]"
+          >
+            Export CSV
+          </button>
         </div>
       </div>
 
