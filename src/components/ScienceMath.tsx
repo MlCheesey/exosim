@@ -17,190 +17,100 @@ export default function ScienceMath({
   effectiveTransitDepthPercent,
   transitGeometry,
 }: ScienceMathProps) {
-  const calculationRows = [
-    ["Planet radius", `${planetRadius.toFixed(1)} R⊕`],
-    ["Star radius", `${starRadius.toFixed(1)} R☉`],
-    ["Radius ratio", radiusRatio.toFixed(5)],
-    [
-      "Maximum depth",
-      `${maximumTransitDepthPercent.toFixed(4)}%`,
-    ],
-    [
-      "Orbit inclination",
-      `${orbitalInclination.toFixed(0)}°`,
-    ],
-  ];
-
-  const geometryNotes = [
+  const geometries = [
     {
-      index: "A",
-      title: "Edge-on orbit",
-      accent: "bg-amber-300",
-      description:
-        "Near 90°, the planet crosses the stellar disk and produces the strongest transit signal.",
+      name: "Edge-on",
+      color: "bg-amber-500",
+      description: "The planet perfectly crosses the stellar disk, producing a full transit signal.",
     },
     {
-      index: "B",
-      title: "Grazing orbit",
-      accent: "bg-rose-300",
-      description:
-        "The planet covers only the edge of the star, creating a shallower brightness dip.",
+      name: "Grazing",
+      color: "bg-rose-400",
+      description: "The planet only obscures the very edge of the star, creating a shallow dip.",
     },
     {
-      index: "C",
-      title: "Missed transit",
-      accent: "bg-stone-600",
-      description:
-        "At lower inclinations, the planet passes above or below the star and no transit is detected.",
+      name: "Miss",
+      color: "bg-stone-500",
+      description: "The orbital inclination is too low; the planet does not cross the star from our perspective.",
     },
   ];
 
   return (
-    <section
-      id="science"
-      className="mx-auto w-full max-w-[1500px] px-4 py-10 sm:px-6 sm:py-14"
-    >
-      <div className="flex flex-wrap items-end justify-between gap-5">
-        <div className="flex min-w-0 items-start gap-4">
-          <span className="mt-1 font-mono text-[9px] tracking-[0.2em] text-amber-300/70">
-            05
+    <section id="science" className="max-w-7xl mx-auto p-4 sm:p-6 mb-20 border-t border-stone-800 mt-12 pt-12">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <h2 className="text-2xl font-semibold text-stone-50 tracking-tight">
+            Transit Photometry Math
+          </h2>
+          <p className="text-sm text-stone-400 mt-1">
+            Geometric state: <span className="text-stone-200 font-mono">{transitGeometry}</span>
+          </p>
+        </div>
+        <div className="border-l-2 border-amber-500 pl-3">
+          <span className="text-xs text-stone-500 uppercase tracking-wider font-mono block">
+            Inclination
           </span>
-
-          <div>
-            <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-stone-600">
-              Signal model
-            </p>
-
-            <h2 className="mt-1 font-display text-xl font-medium tracking-[-0.025em] text-stone-50 sm:text-2xl">
-              The science behind the transit
-            </h2>
-
-            <p className="mt-2 max-w-2xl text-xs leading-5 text-stone-500 sm:text-sm sm:leading-6">
-              A planet blocks part of the star&apos;s visible surface.
-              The lost light depends mainly on the planet&apos;s radius
-              compared with its host star.
-            </p>
-          </div>
-        </div>
-
-        <div className="border-l border-rose-300/50 pl-4">
-          <p className="font-mono text-[8px] uppercase tracking-[0.18em] text-stone-600">
-            Current geometry
-          </p>
-          <p className="mt-1 font-mono text-xs text-rose-300">
-            {transitGeometry}
-          </p>
+          <span className="font-mono text-stone-200 text-sm">{orbitalInclination}°</span>
         </div>
       </div>
 
-      <div className="mt-8 grid border-y border-white/[0.08] lg:grid-cols-[1.08fr_0.92fr]">
-        <div className="py-8 pr-0 lg:border-r lg:border-white/[0.08] lg:pr-10">
-          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-600">
-            Transit-depth equation
+      <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
+        <article className="bg-stone-900/40 p-6 border border-stone-800 rounded-lg">
+          <h3 className="text-sm font-medium text-stone-400 uppercase tracking-widest mb-4">
+            Base Equation
+          </h3>
+          <div className="font-mono text-3xl sm:text-4xl text-amber-500 mb-6 py-2">
+            ΔF / F = (Rₚ / R★)²
+          </div>
+          <p className="text-stone-300 text-sm leading-relaxed">
+            The fraction of starlight blocked (ΔF / F) is equal to the ratio of the planet's area to the star's area. Because the area of a circle is πr², the constants cancel out, leaving the square of the radius ratio.
           </p>
+        </article>
 
-          <div className="my-8 border-l border-amber-300/55 py-3 pl-5 sm:pl-7">
-            <p className="font-mono text-3xl tracking-[-0.04em] text-stone-100 sm:text-5xl">
-              ΔF / F = (Rₚ / R★)²
-            </p>
-          </div>
+        <article className="bg-stone-900/40 p-6 border border-stone-800 rounded-lg">
+          <h3 className="text-sm font-medium text-stone-400 uppercase tracking-widest mb-4">
+            Live Calculation
+          </h3>
 
-          <div className="grid gap-5 text-sm leading-6 text-stone-500 sm:grid-cols-2">
-            <p>
-              <span className="font-mono text-amber-200">
-                ΔF / F
-              </span>{" "}
-              is the fraction of starlight lost during transit.
-            </p>
-
-            <p>
-              <span className="font-mono text-amber-200">
-                Rₚ
-              </span>{" "}
-              is the planet radius and{" "}
-              <span className="font-mono text-amber-200">
-                R★
-              </span>{" "}
-              is the stellar radius.
-            </p>
-
-            <p className="sm:col-span-2">
-              The ratio is squared because blocked light depends on
-              circular area—not only the apparent width of the planet.
-            </p>
-          </div>
-        </div>
-
-        <div className="border-t border-white/[0.08] py-8 lg:border-t-0 lg:pl-10">
-          <div className="flex items-center justify-between gap-4">
-            <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-600">
-              Live calculation
-            </p>
-            <span className="size-1.5 animate-pulse rounded-full bg-rose-300" />
-          </div>
-
-          <dl className="mt-5 divide-y divide-white/[0.07] border-y border-white/[0.07]">
-            {calculationRows.map(([label, value]) => (
-              <div
-                key={label}
-                className="flex items-center justify-between gap-5 py-3"
-              >
-                <dt className="text-xs text-stone-600">
-                  {label}
-                </dt>
-                <dd
-                  className={`font-mono text-xs ${
-                    label === "Maximum depth"
-                      ? "text-rose-300"
-                      : label === "Planet radius"
-                        ? "text-amber-200"
-                        : "text-stone-300"
-                  }`}
-                >
-                  {value}
-                </dd>
-              </div>
-            ))}
-          </dl>
-
-          <div className="mt-6 border-l border-rose-300/55 pl-5">
-            <p className="text-[10px] uppercase tracking-[0.16em] text-stone-600">
-              Observable signal
-            </p>
-            <p className="mt-1 font-mono text-3xl text-rose-300">
-              {effectiveTransitDepthPercent.toFixed(4)}%
-            </p>
-            <p className="mt-2 text-xs leading-5 text-stone-600">
-              Inclination determines whether the planet fully crosses,
-              grazes, or misses the visible stellar surface.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid border-b border-white/[0.08] md:grid-cols-3">
-        {geometryNotes.map((note, index) => (
-          <div
-            key={note.title}
-            className={`py-7 md:px-7 ${
-              index > 0
-                ? "border-t border-white/[0.08] md:border-l md:border-t-0"
-                : ""
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <span className={`size-1.5 rounded-full ${note.accent}`} />
-              <span className="font-mono text-[8px] tracking-[0.2em] text-stone-700">
-                {note.index}
-              </span>
+          <dl className="space-y-4 font-mono text-sm">
+            <div className="flex justify-between items-center">
+              <dt className="text-stone-500">Planet Radius (Rₚ)</dt>
+              <dd className="text-stone-200">{planetRadius.toFixed(2)} R⊕</dd>
             </div>
-            <h3 className="mt-4 font-display text-base font-medium text-stone-200">
-              {note.title}
-            </h3>
-            <p className="mt-2 text-xs leading-5 text-stone-600">
-              {note.description}
-            </p>
-          </div>
+            <div className="flex justify-between items-center">
+              <dt className="text-stone-500">Star Radius (R★)</dt>
+              <dd className="text-stone-200">{starRadius.toFixed(2)} R☉</dd>
+            </div>
+            <div className="flex justify-between items-center">
+              <dt className="text-stone-500">Radius Ratio</dt>
+              <dd className="text-stone-200">{radiusRatio.toFixed(5)}</dd>
+            </div>
+            <div className="flex justify-between items-center">
+              <dt className="text-stone-500">Maximum Possible Depth</dt>
+              <dd className="text-stone-200">{maximumTransitDepthPercent.toFixed(4)}%</dd>
+            </div>
+            <div className="flex justify-between items-center pt-4 border-t border-stone-800">
+              <dt className="text-stone-400 font-semibold">Effective Transit Depth</dt>
+              <dd className="text-rose-400 font-semibold text-lg">
+                {effectiveTransitDepthPercent.toFixed(4)}%
+              </dd>
+            </div>
+          </dl>
+        </article>
+      </div>
+
+      <div className="grid sm:grid-cols-3 gap-4 sm:gap-6 mt-8">
+        {geometries.map((geometry) => (
+          <article
+            key={geometry.name}
+            className="p-5 border border-stone-800 rounded-lg bg-stone-900/20"
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <div className={`w-3 h-3 rounded-full ${geometry.color}`} aria-hidden="true" />
+              <h4 className="font-semibold text-stone-200">{geometry.name}</h4>
+            </div>
+            <p className="text-sm text-stone-400 leading-relaxed">{geometry.description}</p>
+          </article>
         ))}
       </div>
     </section>
