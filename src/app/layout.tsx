@@ -1,9 +1,5 @@
 import type { Metadata } from "next";
-import {
-  Inter,
-  JetBrains_Mono,
-  Space_Grotesk,
-} from "next/font/google";
+import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
 const displayFont = Space_Grotesk({
@@ -25,9 +21,8 @@ const dataFont = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ExoSim — Exoplanet Transit Lab",
-  description:
-    "An interactive 3D simulator for exploring exoplanet transits, orbital geometry, and telescope light curves.",
+  title: "ExoSim",
+  description: "A small exoplanet transit and light-curve simulator.",
 };
 
 export default function RootLayout({
@@ -37,9 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${displayFont.variable} ${interfaceFont.variable} ${dataFont.variable}`}
-      >
+      <body className={`${displayFont.variable} ${interfaceFont.variable} ${dataFont.variable}`}>
         {children}
       </body>
     </html>

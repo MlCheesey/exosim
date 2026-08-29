@@ -1,266 +1,319 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Pause, Play, RotateCcw } from "lucide-react";
 import HowToUse from "@/components/HowToUse";
-import ExoSimLogo from "@/components/ExoSimLogo";
 import { LightCurveChart } from "@/components/LightCurveChart";
 import OrbitalScene from "@/components/OrbitalScene";
-import ScienceMath from "@/components/ScienceMath";
 import ExoplanetLibrary, { type ExoplanetPreset } from "@/components/PlanetPresetLibrary";
+import ScienceMath from "@/components/ScienceMath";
 import { calculateTransitVisibility, getTransitGeometry } from "@/lib/transitMath";
 
-type RangeControlProps = {
+const EARTH_RADII_PER_SOLAR_RADIUS = 109.1;
+const DEGREES_TO_RADIANS = Math.PI / 180;
+const ORBIT_MISS_SCALE = 13;
+
+const rangeClass = "mt-3 w-full accent-amber-600";
+
+type SimSettings = {
+  planetRadius: number;
+  starRadius: number;
+  inclination: number;
+  speed: number;
+  noisePpm: number;
+};
+
+type SliderControlProps = {
   label: string;
-  value: string;
-  currentValue: number;
+  value: number;
+  unit: string;
   min: number;
   max: number;
   step: number;
+  precision?: number;
+  note?: string;
   onChange: (value: number) => void;
-  accent?: "amber" | "rose";
-  description?: string;
 };
 
-function RangeControl({
+function Panel({
+  className = "",
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className={`rounded-lg border border-stone-800 bg-stone-900 ${className}`}>
+      {children}
+    </section>
+  );
+}
+
+function SliderControl({
   label,
   value,
-  currentValue,
+  unit,
   min,
   max,
   step,
+  precision = 2,
+  note,
   onChange,
-  accent = "amber",
-  description,
-}: RangeControlProps) {
+}: SliderControlProps) {
   return (
-    <div className="mb-6">
-      <div className="flex justify-between items-center mb-2">
-        <span className="text-sm font-medium text-stone-400">{label}</span>
-        <span
-          className={`font-mono text-lg ${accent === "rose" ? "text-rose-400" : "text-amber-500"}`}
-        >
-          {value}
+    <label className="block py-4">
+      <span className="flex justify-between gap-4">
+        <span className="text-sm text-stone-300">{label}</span>
+        <span className="font-mono text-sm">
+          {value.toFixed(precision)} {unit}
         </span>
-      </div>
+      </span>
+      {note ? <p className="mt-1 text-xs text-stone-500">{note}</p> : null}
       <input
+        className={rangeClass}
         type="range"
         min={min}
         max={max}
         step={step}
-        value={currentValue}
-        onChange={(e) => onChange(Number(e.target.value))}
-        aria-label={label}
-        className={`exo-range ${accent === "rose" ? "exo-range--rose" : ""}`}
+        value={value}
+        onChange={(event) => onChange(Number(event.target.value))}
       />
-      {description && <p className="text-xs text-stone-500 mt-2">{description}</p>}
-    </div>
+    </label>
   );
 }
 
+function useTransitCalculations(settings: Pick<SimSettings, "planetRadius" | "starRadius" | "inclination">) {
+  return useMemo(() => {
+    const rPlanet = settings.planetRadius / EARTH_RADII_PER_SOLAR_RADIUS;
+    const ratio = rPlanet / settings.starRadius;
+    const maxDepth = ratio ** 2 * 100;
+    const angle = settings.inclination * DEGREES_TO_RADIANS;
+    const miss = Math.abs(Math.cos(angle)) * ORBIT_MISS_SCALE;
+    const visible = calculateTransitVisibility(rPlanet, settings.starRadius, miss);
+    const depth = maxDepth * visible;
+    const geometry = getTransitGeometry(visible);
+
+    return {
+      planetRadius: settings.planetRadius,
+      starRadius: settings.starRadius,
+      inclination: settings.inclination,
+      ratio,
+      maxDepth,
+      depth,
+      geometry,
+    };
+  }, [settings.inclination, settings.planetRadius, settings.starRadius]);
+}
+
 export default function Home() {
-  const [planetRadius, setPlanetRadius] = useState(1);
-  const [starRadius, setStarRadius] = useState(1);
-  const [orbitalInclination, setOrbitalInclination] = useState(90);
-  const [noisePpm, setNoisePpm] = useState(50);
-  const [orbitalPhase, setOrbitalPhase] = useState(0);
-
+  const [settings, setSettings] = useState<SimSettings>({
+    planetRadius: 1,
+    starRadius: 1,
+    inclination: 89,
+    speed: 1,
+    noisePpm: 35,
+  });
+  const [phase, setPhase] = useState(0);
+  const [resetCount, setResetCount] = useState(0);
+  const [activePlanet, setActivePlanet] = useState<string>();
   const [isPaused, setIsPaused] = useState(false);
-  const [simulationSpeed, setSimulationSpeed] = useState(1);
-  const [resetSignal, setResetSignal] = useState(0);
-  const [activePlanetName, setActivePlanetName] = useState<string | undefined>(undefined);
 
-  const solarRadiusInEarthRadii = 109.1;
-  const radiusRatio = planetRadius / (starRadius * solarRadiusInEarthRadii);
-  const maximumTransitDepthPercent = radiusRatio ** 2 * 100;
+  const { planetRadius, starRadius, inclination, speed, noisePpm } = settings;
+  const transit = useTransitCalculations(settings);
+  const { depth, geometry } = transit;
 
-  const renderedPlanetRadius = 0.38 * planetRadius;
-  const renderedStarRadius = 1.35 * starRadius;
-  const inclinationRadians = (orbitalInclination * Math.PI) / 180;
-  const projectedTransitOffset = Math.abs(0.12 + 4 * Math.cos(inclinationRadians));
+  function updateSetting(key: keyof SimSettings, value: number) {
+    setSettings((current) => ({ ...current, [key]: value }));
+    setActivePlanet(undefined);
+  }
 
-  const transitVisibility = calculateTransitVisibility(
-    renderedPlanetRadius,
-    renderedStarRadius,
-    projectedTransitOffset
-  );
-  const effectiveTransitDepthPercent = maximumTransitDepthPercent * transitVisibility;
-  const transitGeometry = getTransitGeometry(transitVisibility);
-
-  const handleOrbitUpdate = useCallback((phase: number) => {
-    setOrbitalPhase(phase);
-  }, []);
-
-  const handleReset = useCallback(() => {
-    setResetSignal((current) => current + 1);
-    setOrbitalPhase(0);
-  }, []);
-
-  const handleLoadPreset = useCallback(
-    (preset: ExoplanetPreset) => {
-      setPlanetRadius(preset.planetRadius);
-      setStarRadius(preset.starRadius);
-      setOrbitalInclination(90);
-      setActivePlanetName(preset.name);
-      setIsPaused(false);
-      handleReset();
-      window.location.hash = "lab";
-    },
-    [handleReset]
-  );
+  function loadPreset(planet: ExoplanetPreset) {
+    setSettings({
+      planetRadius: planet.planetRadius,
+      starRadius: planet.starRadius,
+      inclination: planet.inclination ?? 89,
+      noisePpm: planet.noisePpm ?? 35,
+      speed: planet.suggestedSpeed ?? 1,
+    });
+    setActivePlanet(planet.name);
+    setIsPaused(false);
+    setPhase(0);
+    setResetCount((count) => count + 1);
+  }
 
   return (
-    <main className="min-h-screen bg-stone-950 text-stone-200 overflow-x-hidden font-sans">
-      <header className="border-b border-stone-800 p-4 sticky top-0 bg-stone-950/90 z-50 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <ExoSimLogo className="w-10 h-10" />
-            <div>
-              <h1 className="text-xl font-bold tracking-tight text-stone-50">ExoSim</h1>
-              <span className="text-xs text-amber-500 font-mono uppercase tracking-widest">
-                Transit Lab
-              </span>
-            </div>
-          </div>
+    <main className="min-h-screen bg-background text-stone-200">
+      <header className="border-b border-stone-800">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5">
+          <a href="#lab" className="font-display text-xl font-semibold text-stone-50">
+            ExoSim
+          </a>
+
+          <nav className="hidden gap-5 text-sm text-stone-400 sm:flex">
+            <a href="#lab">Lab</a>
+            <a href="#library">Planets</a>
+            <a href="#science">Math</a>
+          </nav>
         </div>
       </header>
 
-      <HowToUse />
+      <div className="mx-auto max-w-6xl px-4 py-8">
+        <section className="max-w-3xl">
+          <p className="text-sm text-stone-500">Transit photometry simulator</p>
+          <h1 className="mt-2 font-display text-3xl font-semibold text-stone-50">
+            Exoplanet light-curve simulator
+          </h1>
+          <p className="mt-3 leading-7 text-stone-400">
+            Adjust the star, planet, orbit angle, and sensor noise to see how a
+            transit changes the measured brightness.
+          </p>
+        </section>
 
-      <section id="lab" className="max-w-7xl mx-auto flex flex-col lg:flex-row border-b border-stone-800">
-        <div className="lg:w-3/4 p-4 sm:p-6 lg:border-r border-stone-800 border-b lg:border-b-0">
-          <h2 className="text-xl font-semibold mb-4 text-stone-50">Simulator View</h2>
-
-          <div className="relative bg-black rounded-lg overflow-hidden border border-stone-800 h-[500px] sm:h-[600px] lg:h-[70vh]">
-            <OrbitalScene
-              planetRadius={planetRadius}
-              starRadius={starRadius}
-              planetName={activePlanetName}
-              orbitalInclination={orbitalInclination}
-              isPaused={isPaused}
-              simulationSpeed={simulationSpeed}
-              resetSignal={resetSignal}
-              onOrbitUpdate={handleOrbitUpdate}
-            />
-
-            <div className="absolute top-4 right-4 bg-black/80 border border-stone-700 rounded-md p-2 flex gap-2 backdrop-blur-md shadow-lg">
-              <button
-                type="button"
-                onClick={() => setIsPaused((prev) => !prev)}
-                className="exo-button px-4 py-2"
-              >
-                {isPaused ? <Play size={16} /> : <Pause size={16} />}
-                {isPaused ? "Resume" : "Pause"}
-              </button>
-              <button
-                type="button"
-                onClick={handleReset}
-                aria-label="Reset orbit"
-                className="exo-icon-button"
-              >
-                <RotateCcw size={16} />
-              </button>
-            </div>
-
-            <div className="absolute bottom-4 left-4 bg-black/80 border-l-2 border-amber-500 p-4 flex gap-6 rounded-r-md backdrop-blur-md">
-              <div>
-                <p className="text-[10px] text-stone-400 uppercase tracking-wider font-mono">Phase</p>
-                <p className="font-mono text-sm text-stone-200">{orbitalPhase.toFixed(3)}</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-stone-400 uppercase tracking-wider font-mono">Speed</p>
-                <input
-                  type="range"
-                  min="0.5"
-                  max="3"
-                  step="0.1"
-                  value={simulationSpeed}
-                  onChange={(e) => setSimulationSpeed(Number(e.target.value))}
-                  aria-label="Orbit speed"
-                  className="exo-range w-24 mt-2"
-                />
-              </div>
-            </div>
-          </div>
+        <div className="mt-7">
+          <HowToUse />
         </div>
 
-        <aside className="lg:w-1/4 p-4 sm:p-6 bg-stone-900/50">
-          <h3 className="font-semibold mb-6 text-stone-50 text-lg">System Parameters</h3>
+        <section id="lab" className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-3">
+          <Panel className="overflow-hidden lg:col-span-2">
+            <div className="border-b border-stone-800 p-4 sm:flex sm:items-center sm:justify-between">
+              <div>
+                <h2 className="font-display text-xl font-semibold text-stone-50">Orbit view</h2>
+                <p className="mt-1 text-sm text-stone-500">
+                  {activePlanet ? `Loaded preset: ${activePlanet}` : "Custom values"}
+                </p>
+              </div>
 
-          <RangeControl
-            label="Planet Radius (R⊕)"
-            value={planetRadius.toFixed(2)}
-            currentValue={planetRadius}
-            min={0.5}
-            max={2.5}
-            step={0.01}
-            onChange={(val) => {
-              setPlanetRadius(val);
-              setActivePlanetName(undefined);
-            }}
-          />
+              <div className="mt-4 flex gap-2 sm:mt-0">
+                <button
+                  type="button"
+                  className="inline-flex h-10 items-center gap-2 rounded-md border border-stone-700 bg-stone-950 px-3 text-sm font-medium text-stone-100 hover:border-amber-700 hover:text-amber-200"
+                  onClick={() => setIsPaused((paused) => !paused)}
+                >
+                  {isPaused ? <Play size={16} /> : <Pause size={16} />}
+                  {isPaused ? "Resume" : "Pause"}
+                </button>
 
-          <RangeControl
-            label="Star Radius (R☉)"
-            value={starRadius.toFixed(2)}
-            currentValue={starRadius}
-            min={0.2}
-            max={2.0}
-            step={0.01}
-            onChange={(val) => {
-              setStarRadius(val);
-              setActivePlanetName(undefined);
-            }}
-          />
+                <button
+                  type="button"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-stone-700 bg-stone-950 text-stone-100 hover:border-amber-700 hover:text-amber-200"
+                  onClick={() => {
+                    setPhase(0);
+                    setResetCount((count) => count + 1);
+                  }}
+                  aria-label="Reset orbit"
+                >
+                  <RotateCcw size={16} />
+                </button>
+              </div>
+            </div>
 
-          <RangeControl
-            label="Inclination (°)"
-            value={orbitalInclination.toString()}
-            currentValue={orbitalInclination}
-            min={60}
-            max={90}
-            step={1}
-            onChange={setOrbitalInclination}
-            description="Orbital plane angle relative to the observer."
-          />
+            <div className="h-[420px] bg-black sm:h-[540px]">
+              <OrbitalScene
+                planetRadius={planetRadius}
+                starRadius={starRadius}
+                planetName={activePlanet}
+                orbitalInclination={inclination}
+                isPaused={isPaused}
+                simulationSpeed={speed}
+                resetSignal={resetCount}
+                onOrbitUpdate={setPhase}
+              />
+            </div>
 
-          <div className="mt-8 pt-6 border-t border-stone-800">
-            <RangeControl
-              label="Sensor Noise (ppm)"
-              value={noisePpm.toString()}
-              currentValue={noisePpm}
-              min={0}
-              max={200}
-              step={5}
-              onChange={setNoisePpm}
-              accent="rose"
-            />
+            <div className="grid gap-4 border-t border-stone-800 p-4 sm:grid-cols-3">
+              <div>
+                <p className="text-xs text-stone-500">phase</p>
+                <p className="mt-1 font-mono text-lg text-stone-100">{phase.toFixed(3)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-stone-500">geometry</p>
+                <p className="mt-1 font-mono text-lg text-stone-100">{geometry}</p>
+              </div>
+              <div>
+                <p className="text-xs text-stone-500">visible depth</p>
+                <p className="mt-1 font-mono text-lg text-stone-100">{depth.toFixed(4)}%</p>
+              </div>
+            </div>
+          </Panel>
+
+          <Panel className="p-5">
+            <h2 className="font-display text-xl font-semibold text-stone-50">Controls</h2>
+            <p className="mt-1 text-sm text-stone-500">
+              Radius changes the depth. Inclination changes whether a transit happens.
+            </p>
+
+            <div className="mt-5 divide-y divide-stone-800">
+              <SliderControl
+                label="Planet radius"
+                value={planetRadius}
+                unit="R⊕"
+                min={0.5}
+                max={16}
+                step={0.05}
+                onChange={(value) => updateSetting("planetRadius", value)}
+              />
+
+              <SliderControl
+                label="Star radius"
+                value={starRadius}
+                unit="R☉"
+                min={0.2}
+                max={2}
+                step={0.01}
+                onChange={(value) => updateSetting("starRadius", value)}
+              />
+
+              <SliderControl
+                label="Inclination"
+                value={inclination}
+                unit="°"
+                min={60}
+                max={90}
+                step={1}
+                precision={0}
+                note="90° means the orbit is edge-on."
+                onChange={(value) => updateSetting("inclination", value)}
+              />
+
+              <SliderControl
+                label="Orbit speed"
+                value={speed}
+                unit="x"
+                min={0.4}
+                max={3}
+                step={0.1}
+                precision={1}
+                onChange={(value) => updateSetting("speed", value)}
+              />
+
+              <SliderControl
+                label="Sensor noise"
+                value={noisePpm}
+                unit="ppm"
+                min={0}
+                max={200}
+                step={5}
+                precision={0}
+                onChange={(value) => updateSetting("noisePpm", value)}
+              />
+            </div>
+          </Panel>
+        </section>
+
+        <Panel className="mt-5 p-4">
+          <h2 className="font-display text-xl font-semibold text-stone-50">Light curve</h2>
+          <p className="mt-1 text-sm text-stone-500">
+            The graph draws one orbit and marks the planet&apos;s current position.
+          </p>
+          <div className="mt-4 h-[360px] sm:h-[430px]">
+            <LightCurveChart orbitalPhase={phase} transitDepthPercent={depth} noisePpm={noisePpm} />
           </div>
-        </aside>
-      </section>
+        </Panel>
 
-      <section className="max-w-7xl mx-auto p-4 sm:p-6 my-8">
-        <h2 className="text-xl font-semibold mb-4 text-stone-50">Light Curve Data</h2>
-        <div className="h-[350px] sm:h-[450px] bg-stone-900/30 border border-stone-800 rounded-lg p-2 sm:p-4">
-          <LightCurveChart
-            orbitalPhase={orbitalPhase}
-            transitDepthPercent={effectiveTransitDepthPercent}
-            noisePpm={noisePpm}
-          />
-        </div>
-      </section>
+        <ExoplanetLibrary active={activePlanet} onLoad={loadPreset} />
 
-      <ExoplanetLibrary activePlanetName={activePlanetName} onLoadPreset={handleLoadPreset} />
-
-      <ScienceMath
-        planetRadius={planetRadius}
-        starRadius={starRadius}
-        orbitalInclination={orbitalInclination}
-        radiusRatio={radiusRatio}
-        maximumTransitDepthPercent={maximumTransitDepthPercent}
-        effectiveTransitDepthPercent={effectiveTransitDepthPercent}
-        transitGeometry={transitGeometry}
-      />
+        <ScienceMath data={transit} />
+      </div>
     </main>
   );
 }
