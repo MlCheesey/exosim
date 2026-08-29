@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -21,6 +20,11 @@ type LightCurveChartProps = {
   noisePpm?: number;
 };
 
+function sampleNoise(index: number) {
+  const value = ((index + 17) * 9301 + 49297) % 233280;
+  return (value / 233280) * 2 - 1;
+}
+
 export function LightCurveChart({
   orbitalPhase,
   transitDepthPercent,
@@ -29,9 +33,7 @@ export function LightCurveChart({
   const sampleCount = 121;
   const phases = Array.from({ length: sampleCount }, (_, i) => i / (sampleCount - 1));
   const noiseAmount = noisePpm / 10000;
-  const [noiseValues] = useState(() =>
-    Array.from({ length: sampleCount }, () => (Math.random() - 0.5) * 2),
-  );
+  const noiseValues = Array.from({ length: sampleCount }, (_, index) => sampleNoise(index));
 
   function getBrightness(phase: number) {
     const distance = Math.abs(phase - 0.25);
